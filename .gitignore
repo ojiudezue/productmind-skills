@@ -1,0 +1,27 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+*.code-workspace
+.vscode/
+.idea/
+
+# Archives
+*.zip
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.*
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Secrets
+*credentials*
+*secret*
+*.pem
+*.key

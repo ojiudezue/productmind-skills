@@ -1,0 +1,28 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint markdown
+        uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          globs: "**/*.md"
+          config: .markdownlint.json
+
+      - name: Validate skills
+        run: bash scripts/validate-skills.sh
+
+      - name: Check internal links
+        run: bash scripts/check-links.sh
+
+  # deploy:
+  #   needs: validate
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - run: echo "Deploy step — configure for your target"
