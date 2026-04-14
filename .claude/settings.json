@@ -1,4 +1,29 @@
 {
   "permissions": {},
-  "hooks": {}
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command // \"\"' | grep -q 'git commit' && printf '{\"systemMessage\":\"VibeMemo: Before committing, check for uncaptured decisions. Run /vibememo if needed.\"}' || printf '{}'",
+            "statusMessage": "VibeMemo: checking..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '{\"systemMessage\":\"VibeMemo session-end: Run /vibememo-eval (Part 1 + Part 2) before closing. Capture uncaptured decisions, then score all 9 eval dimensions.\"}'",
+            "statusMessage": "VibeMemo: session-end eval..."
+          }
+        ]
+      }
+    ]
+  }
 }

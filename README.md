@@ -19,14 +19,14 @@ Every skill in this collection blends product judgment with engineering executio
 
 ```bash
 # From your project directory
-claude install-skill https://github.com/YOUR_USERNAME/productmind-skills/tree/main/skills/new-project-scaffolding
+claude install-skill https://github.com/ojiudezue/productmind-skills/tree/main/skills/new-project-scaffolding
 ```
 
 ### Browse and install from the collection
 
 ```bash
 # Clone the repo and symlink skills you want
-git clone https://github.com/YOUR_USERNAME/productmind-skills.git
+git clone https://github.com/ojiudezue/productmind-skills.git
 cd productmind-skills
 
 # Copy a skill into your project
@@ -38,6 +38,7 @@ cp -r skills/new-project-scaffolding /path/to/your/project/.claude/skills/
 | Skill | Category | Description |
 |---|---|---|
 | [new-project-scaffolding](skills/new-project-scaffolding/) | Product + Engineering | Scaffolds projects with viability gates, product briefs, market research, and full code infrastructure |
+| [vibememo](skills/vibememo/) | Product + Engineering | Decision trail capture system — persists the "why" behind architectural, product, and strategic decisions as structured JSON + compressed narrative |
 
 *More skills coming soon. See [docs/product-brief.md](docs/product-brief.md) for the roadmap.*
 

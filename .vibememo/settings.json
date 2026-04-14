@@ -1,0 +1,18 @@
+{
+  "format_version": "2.0",
+  "project_name": "ProductMind Skills",
+  "verbosity": "standard",
+  "narrative_target_words": 1200,
+  "narrative_hard_ceiling": 2000,
+  "narrative_version_threshold": 1500,
+  "narrative_min_useful": 200,
+  "auto_narrative_on_commit": true,
+  "auto_narrative_loop_minutes": null,
+  "narrative_generation": "llm",
+  "heuristic_fallback": true,
+  "categories": [
+    "architecture", "stack", "brand", "product",
+    "security", "deployment", "data_model", "ux",
+    "pricing", "process"
+  ]
+}
