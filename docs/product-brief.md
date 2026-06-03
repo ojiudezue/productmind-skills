@@ -38,7 +38,34 @@ ProductMind Skills is the only open-source skills collection that treats product
 
 ## Open Questions
 
-1. Should skills be organized by workflow stage (discover → define → build → ship) or by category (product, design, engineering)?
+1. ~~Should skills be organized by workflow stage (discover → define → build → ship) or by category (product, design, engineering)?~~ **Answered (2026-06-03):** workflow stage. The Building Rocketships catalog uses discover → define → build → ship → lead, and it's the natural way PMs think about the lifecycle.
 2. What's the right granularity — many small focused skills or fewer comprehensive ones?
 3. How to handle skills that need web search or MCP servers — document requirements or bundle?
 4. Community contribution guidelines — how strict on the product-engineering blend requirement?
+
+## Roadmap — Building Rocketships catalog (added 2026-06-03)
+
+Per the [RocketshipsGPT](https://github.com/ojiudezue/BuildingRocketships) [dual-distribution ADR 0004](https://github.com/ojiudezue/BuildingRocketships/blob/main/docs/adr/0004-dual-distribution-strategy.md), 13 book-derived skills will be published to this catalog as each is implemented in the agent. Each ships under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (per [ADR 0005](https://github.com/ojiudezue/BuildingRocketships/blob/main/docs/adr/0005-license-split.md)).
+
+**Discover — finding sharp problems**
+- [x] [`sharp-problem-test`](../skills/sharp-problem-test/) — Ch 1, the 3-Question Sharpness Test (≥3x improvement floor)
+- [ ] `customer-discovery-week` — Ch 1, the 3-step 1-week discovery process
+- [ ] `five-dim-customer` — Ch 11, the 5-dimension target customer definition
+- [ ] `listening-machine` — Ch 2, the customer feedback machine
+
+**Define — choosing what to build**
+- [ ] `slc-or-mvp` — Ch 3, the MVP vs SLC decision framework
+- [ ] `aha-mapper` — Ch 4, mapping the aha moment + smallest loop
+- [ ] `scope-cutter` — Ch 3/4, cutting required-onboarding-steps in half
+
+**Build — monetization and identity choices**
+- [ ] `reverse-freemium-design` — Ch 5, the 4-element reverse-freemium template
+- [ ] `pricing-tier-math` — Ch 6, cost-floor → target-margin → market-anchor pricing
+- [ ] `customer-id-architect` — Ch 4, GUIDs over emails as primary identifiers
+
+**Ship — measurement and growth**
+- [ ] `vmsoop-strategy` — Ch 11+14, VMSOO-P plus cascading Tier 1/Tier 2 metrics
+- [ ] `growth-lever-picker` — Ch 12, the 10 growth levers scored by ICE
+- [ ] `roadmap-from-strategy` — Ch 14+Epilogue, roadmap as ordered sharp-problem queue
+
+The Track B publish order follows whichever skill the agent implements next on Track A. See `docs/strategy/skills-and-agent-plan-v2.md` in BR for the current sequence.

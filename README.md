@@ -39,8 +39,9 @@ cp -r skills/new-project-scaffolding /path/to/your/project/.claude/skills/
 |---|---|---|
 | [new-project-scaffolding](skills/new-project-scaffolding/) | Product + Engineering | Scaffolds projects with viability gates, product briefs, market research, and full code infrastructure |
 | [vibememo](skills/vibememo/) | Product + Engineering | Decision trail capture system — persists the "why" behind architectural, product, and strategic decisions as structured JSON + compressed narrative |
+| [sharp-problem-test](skills/sharp-problem-test/) | Product Discovery (Building Rocketships, Ch 1) | Runs the 3-Question Sharpness Test on a product brief. Returns SHARP / NOT_SHARP / NEEDS_MORE_EVIDENCE with evidence per axis, the ≥3x improvement-bar check, and a named analogous case from the book |
 
-*More skills coming soon. See [docs/product-brief.md](docs/product-brief.md) for the roadmap.*
+*More book-derived skills landing in waves — the next batch is `reverse-freemium-design` and `pricing-tier-math`. The full 13-skill catalog from Building Rocketships is mirrored from the [RocketshipsGPT agent](https://github.com/ojiudezue/BuildingRocketships) as each agent-side implementation lands. See [docs/product-brief.md](docs/product-brief.md) for the roadmap.*
 
 ## Skill Quality Standards
 
