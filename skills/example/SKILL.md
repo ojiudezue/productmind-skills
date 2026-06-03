@@ -1,3 +1,8 @@
+---
+name: example-skill-template
+description: Use as a starting point for creating new ProductMind skills. Replace this description with one that names the specific trigger phrases, the framework or rule the skill encodes, and the deliverable it produces. The description is what the agent reads to decide whether to invoke this skill.
+---
+
 # Example Skill Template
 
 Use this as a starting point for creating new ProductMind skills.

@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 # Validates all skills in the skills/ directory
 # Checks: SKILL.md exists, has required sections, follows naming conventions
+#
+# Shared contract with BuildingRocketships' TS validator at
+# BuildingRocketships/scripts/validate-skills.ts. Both must enforce:
+#   1. YAML frontmatter with `name:` and `description:` keys
+#   2. An H1 title (# Heading)
+#   3. Substantive content (>= 10 lines)
+# Drift between the two = portable-skill import failures. If you change the
+# contract here, mirror it in BR. See ADR 0004 (dual distribution) and B1.5 in
+# BuildingRocketships/docs/strategy/skills-and-agent-plan-v2.md.
 
 set -euo pipefail
 
@@ -51,6 +60,19 @@ for skill_dir in "$SKILLS_DIR"/*/; do
         log_pass "Has a title heading"
     else
         log_fail "Missing title heading (# Title)"
+    fi
+
+    # Frontmatter contract (must match BR's TS validator)
+    if head -20 "$skill_file" | grep -q "^name:"; then
+        log_pass "Frontmatter has name:"
+    else
+        log_fail "Frontmatter missing required 'name:' key (BR contract)"
+    fi
+
+    if head -20 "$skill_file" | grep -q "^description:"; then
+        log_pass "Frontmatter has description:"
+    else
+        log_fail "Frontmatter missing required 'description:' key (BR contract)"
     fi
 
     # Check file is not empty / too short
