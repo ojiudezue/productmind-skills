@@ -13,10 +13,15 @@ echo "Checking internal links in markdown files..."
 while IFS= read -r -d '' file; do
     # Extract markdown links: [text](path)
     while IFS= read -r link; do
-        # Skip external links, anchors, and empty links
+        # Skip external links, anchors, empty links, and template paths
         [[ "$link" =~ ^https?:// ]] && continue
         [[ "$link" =~ ^# ]] && continue
         [[ -z "$link" ]] && continue
+        # Skip template-variable paths like users/{username}/... — these are
+        # documentation placeholders, not real file references.
+        [[ "$link" =~ \{[^}]+\} ]] && continue
+        # Skip mailto: and other URI schemes
+        [[ "$link" =~ ^[a-z]+: ]] && continue
 
         # Strip anchor from link
         link_path="${link%%#*}"
