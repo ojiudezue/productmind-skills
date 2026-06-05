@@ -56,9 +56,9 @@ Per the [RocketshipsGPT](https://github.com/ojiudezue/BuildingRocketships) [dual
 
 ### Define — choosing what to build
 
-- [ ] `slc-or-mvp` — Ch 3, the MVP vs SLC decision framework
-- [ ] `aha-mapper` — Ch 4, mapping the aha moment + smallest loop
-- [ ] `scope-cutter` — Ch 3/4, cutting required-onboarding-steps in half
+- [x] [`slc-or-mvp`](../skills/slc-or-mvp/) — Ch 3, the MVP vs SLC decision framework
+- [x] [`aha-mapper`](../skills/aha-mapper/) — Ch 4, mapping the aha moment + smallest loop
+- [x] [`scope-cutter`](../skills/scope-cutter/) — Ch 3/4, cutting required-onboarding-steps in half
 
 ### Build — monetization and identity choices
 
