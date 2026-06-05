@@ -52,6 +52,7 @@ productmind-skills/
 ## Quality Standards
 
 Every skill in this collection must:
+
 1. **Blend product and engineering** — pure engineering skills belong elsewhere
 2. **Be self-contained** — include all references and context needed to execute
 3. **Follow SKILL.md standard** — portable across compatible agents

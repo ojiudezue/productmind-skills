@@ -87,6 +87,7 @@ Trigger a VibeMemo entry when:
 5. **The user explicitly asks** — `/vibememo` or "remember this" or "log this"
 
 Do NOT create entries for:
+
 - Routine code changes with no architectural significance
 - Minor bug fixes or formatting changes
 - Questions that don't result in decisions

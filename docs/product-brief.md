@@ -47,23 +47,27 @@ ProductMind Skills is the only open-source skills collection that treats product
 
 Per the [RocketshipsGPT](https://github.com/ojiudezue/BuildingRocketships) [dual-distribution ADR 0004](https://github.com/ojiudezue/BuildingRocketships/blob/main/docs/adr/0004-dual-distribution-strategy.md), 13 book-derived skills will be published to this catalog as each is implemented in the agent. Each ships under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (per [ADR 0005](https://github.com/ojiudezue/BuildingRocketships/blob/main/docs/adr/0005-license-split.md)).
 
-**Discover — finding sharp problems**
+### Discover — finding sharp problems
+
 - [x] [`sharp-problem-test`](../skills/sharp-problem-test/) — Ch 1, the 3-Question Sharpness Test (≥3x improvement floor)
 - [ ] `customer-discovery-week` — Ch 1, the 3-step 1-week discovery process
 - [ ] `five-dim-customer` — Ch 11, the 5-dimension target customer definition
 - [ ] `listening-machine` — Ch 2, the customer feedback machine
 
-**Define — choosing what to build**
+### Define — choosing what to build
+
 - [ ] `slc-or-mvp` — Ch 3, the MVP vs SLC decision framework
 - [ ] `aha-mapper` — Ch 4, mapping the aha moment + smallest loop
 - [ ] `scope-cutter` — Ch 3/4, cutting required-onboarding-steps in half
 
-**Build — monetization and identity choices**
+### Build — monetization and identity choices
+
 - [x] [`reverse-freemium-design`](../skills/reverse-freemium-design/) — Ch 5, the 4-element reverse-freemium template
 - [x] [`pricing-tier-math`](../skills/pricing-tier-math/) — Ch 6, cost-floor → target-margin → market-anchor pricing
 - [ ] `customer-id-architect` — Ch 4, GUIDs over emails as primary identifiers
 
-**Ship — measurement and growth**
+### Ship — measurement and growth
+
 - [ ] `vmsoop-strategy` — Ch 11+14, VMSOO-P plus cascading Tier 1/Tier 2 metrics
 - [ ] `growth-lever-picker` — Ch 12, the 10 growth levers scored by ICE
 - [ ] `roadmap-from-strategy` — Ch 14+Epilogue, roadmap as ordered sharp-problem queue

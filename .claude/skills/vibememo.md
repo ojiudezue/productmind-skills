@@ -18,6 +18,7 @@ Trigger a VibeMemo entry when:
 5. **The user explicitly asks** (`/vibememo` or "remember this" or "log this")
 
 Do NOT create entries for:
+
 - Routine code changes with no architectural significance
 - Minor bug fixes
 - Formatting or style changes
@@ -48,6 +49,7 @@ Do NOT create entries for:
 ## vibememo.md Updates
 
 The narrative (`.vibememo/vibememo.md`) is the primary artifact — what humans read, what CodeStory ingests. It should:
+
 - Read like a senior engineer telling a new team member how this project came to be **and why it was built this way**
 - Be chronological but compressed — skip the boring parts
 - **Always preserve the "why" behind decisions.** Architecture can be read from code. Reasoning cannot. "We use Postgres" is worthless without "because relational queries were needed for billing." The "why" is the last thing to compress, ever.

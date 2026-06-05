@@ -13,6 +13,7 @@ description: >
 # Project Scaffold System
 
 Scaffolds a complete software project across two layers simultaneously:
+
 - **Project layer**: product brief, market research, viability gate, quality tracking
 - **Code layer**: repo structure, testing, CI/CD, documentation, prototyping
 
@@ -38,6 +39,7 @@ Ask the user three things:
 Before writing any code, generate a viability assessment. Read `references/viability-criteria.md` for the full rubric.
 
 The viability assessment covers:
+
 - Problem clarity and urgency
 - Target user definition
 - Competitive landscape (quick scan)
@@ -70,6 +72,7 @@ Create `docs/product-brief.md` with this structure:
 Create `docs/market-research.md`. Read `references/market-research-template.md` for depth guidance.
 
 This is not a placeholder — do real research:
+
 - Direct competitors (3-5 minimum)
 - Adjacent products that partially solve the problem
 - Differentiation gaps and opportunities
@@ -83,6 +86,7 @@ Use web search to populate this. If web search is unavailable, clearly mark sect
 Create a `CLAUDE.md` tailored to the project type. Read `references/claude-md-patterns.md` for type-specific templates.
 
 Every CLAUDE.md must include:
+
 - Project description and architecture overview
 - Tech stack and key dependencies
 - Code conventions (naming, file organization, import style)
@@ -146,6 +150,7 @@ Create config files, sample test files, and npm/pip scripts so tests run immedia
 ### Step 8: Set Up CI/CD
 
 Generate `.github/workflows/ci.yml` (or equivalent) that:
+
 - Runs all test types from Step 7
 - Runs linting/formatting checks
 - Runs type checking if applicable
@@ -157,6 +162,7 @@ Read `references/ci-templates.md` for project-type-specific pipelines.
 ### Step 9: Set Up Prototyping (UI Projects Only)
 
 If the project has a user interface:
+
 1. Create `prototypes/` with a README explaining the prototyping workflow
 2. Set up a simple HTML/CSS prototype scaffold (no framework, pure markup)
 3. The rule: **prototype in HTML/CSS first, then build in the target framework**
@@ -178,6 +184,7 @@ List what skills are available and which ones you're applying. If a needed skill
 ### Step 11: Write the Milestone 0 Doc
 
 Create `docs/milestones/m0-scaffold.md` documenting:
+
 - What was set up and why
 - Architecture decisions made
 - Reference projects borrowed from

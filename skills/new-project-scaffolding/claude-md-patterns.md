@@ -32,16 +32,21 @@
 ```
 
 ## Web App (React/Next.js)
+
 Add: component patterns (server vs client), state management approach, API route conventions, environment variable handling, deployment target.
 
 ## iOS (Swift/SwiftUI)
+
 Add: minimum iOS version, architecture pattern (MVVM/TCA), SwiftUI vs UIKit boundaries, Core Data or SwiftData usage, provisioning/signing notes.
 
 ## API Service (Node/Python)
+
 Add: request/response patterns, authentication approach, database migration strategy, error handling conventions, logging format.
 
 ## CLI Tool
+
 Add: argument parsing library, output formatting (JSON/table/plain), exit code conventions, config file location.
 
 ## Python Package
+
 Add: packaging tool (setuptools/poetry/hatch), Python version support range, type annotation policy, docstring format.

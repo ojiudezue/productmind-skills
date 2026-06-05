@@ -16,6 +16,7 @@ step of the core workflow — the book's hard anti-pattern.
 ## When to use
 
 Trigger when the user:
+
 - Is designing a freemium or trial-to-paid conversion flow
 - Asks "how long should the trial be"
 - Asks "what should be free vs paid"
@@ -54,6 +55,7 @@ use products need a full cycle.
 ### 2. End-of-trial messaging
 
 A specific, dated, no-surprise communication sequence. Touchpoints at:
+
 - Trial start (welcome + the path to aha)
 - Mid-trial (usage check-in + nudges to the unused activation steps)
 - 3 days before end (price + value reminder + frictionless upgrade path)
@@ -69,6 +71,7 @@ The paid tier delivers scale, collaboration, or advanced configuration on
 top of that workflow — never IN it.
 
 Concretely:
+
 - **Free** = the smallest loop that delivers the aha moment, runnable
   forever, at limited scale
 - **Paid** = higher limits (more users, more storage, more runs), team
@@ -92,6 +95,7 @@ delete of their data.
 ## The decision rule
 
 A reverse-freemium design passes if all four:
+
 1. Trial length matches the usage frequency table (±20%)
 2. End-of-trial messaging has at least the 4 named touchpoints
 3. Free tier completes the core workflow at limited scale; nothing in the
@@ -147,6 +151,7 @@ If any axis fails, the design is broken — name which and how to fix it.
 ## Worked example from the book
 
 ### Calendly (Ch 5) → SOUND
+
 - Usage frequency: 3–5× per week for sales/recruiting roles
 - Trial length: 14-day Pro trial — matches the table
 - Free tier: book one event type, schedule unlimited 1:1s with a single
@@ -177,6 +182,7 @@ If any axis fails, the design is broken — name which and how to fix it.
 ## Anti-patterns to flag
 
 If the user's design has any of these, surface them and refuse:
+
 - "Free until you actually try to ship/save/export/share" — the paywalled-
   final-step anti-pattern. The book is explicit: refuse this. Cite Ch 5.
 - "30-day trial for a daily product" — too long. Urgency vanishes.
@@ -192,6 +198,7 @@ If the user's design has any of these, surface them and refuse:
 Ch 5: Reverse Freemium Design.
 
 ---
+
 ## About this skill
 
 This skill is part of the **[ProductMind Skills](https://github.com/ojiudezue/productmind-skills)** catalog — open-source product-judgment skills for AI coding agents.

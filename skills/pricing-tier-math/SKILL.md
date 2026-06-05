@@ -17,6 +17,7 @@ named justification.
 ## When to use
 
 Trigger when the user:
+
 - Is setting initial pricing for a new product or feature
 - Is restructuring tiers (e.g., adding an Enterprise tier, splitting Pro)
 - Asks "what should this cost"
@@ -39,6 +40,7 @@ Trigger when the user:
 
 Compute the per-unit (or per-seat, per-month) cost to deliver the product.
 Include:
+
 - Infrastructure (compute, storage, bandwidth)
 - Third-party APIs and data
 - Support and success allocation
@@ -73,6 +75,7 @@ niche with no real competition).
 
 If the cost-derived base price is far outside the anchor range, one of
 two things is true:
+
 - Your cost is wrong (too high → re-examine; too low → you're leaving
   margin on the table)
 - The market won't bear the price you need to be profitable
@@ -83,6 +86,7 @@ ship it.
 ### Step 4 — Tier construction (the 3-factor rule)
 
 Tiers are built using three factors:
+
 1. **Delivery cost** — features that materially cost more to deliver go
    in higher tiers (storage, compute, API quotas, SSO infrastructure)
 2. **Customer value** — features that deliver more value to a specific
@@ -147,6 +151,7 @@ If a feature is niche AND low cost, free-tier sweetener or remove it.
 ## Worked example from the book
 
 ### Calendly's Pro pricing (Ch 6) → SOUND
+
 - Cost basis: small per-user cost — calendar API calls, scheduling
   infrastructure, support — call it ~$2/user/month at scale.
 - Target margin: 70% (standard SaaS).
@@ -181,6 +186,7 @@ If a feature is niche AND low cost, free-tier sweetener or remove it.
 ## Anti-patterns to flag
 
 If the user's design has any of these, surface them:
+
 - "Cost was $0.50, target margin 99%, so we charge $50" — the math is
   mechanically right and strategically wrong. Anchor check will catch it.
 - "Our competitor charges X, so we charge X − 20%" — race to the bottom
@@ -196,6 +202,7 @@ If the user's design has any of these, surface them:
 Ch 6: Pricing Tier Math.
 
 ---
+
 ## About this skill
 
 This skill is part of the **[ProductMind Skills](https://github.com/ojiudezue/productmind-skills)** catalog — open-source product-judgment skills for AI coding agents.

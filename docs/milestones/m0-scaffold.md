@@ -5,12 +5,14 @@
 ## What Was Set Up
 
 ### Product Layer
+
 - **Viability assessment** (`docs/viability-assessment.md`): 0 Weak scores — strong positioning in a validated market with a clear differentiation gap
 - **Product brief** (`docs/product-brief.md`): Problem, target user, value prop, success criteria, scope boundaries
 - **Market research** (`docs/market-research.md`): 5 direct competitors analyzed, differentiation map, pricing patterns, user signals
 - **Quality log** (`docs/quality-log.md`): Bug classification tracker initialized
 
 ### Code Layer
+
 - **CLAUDE.md**: Full project context — structure, conventions, testing, quality standards, common pitfalls
 - **README.md**: GitHub shop front — value prop, quick start, skills catalog, quality standards, contributing guide
 - **Skills directory** (`skills/`): Published skills with `new-project-scaffolding` as the first entry, plus `example/` as a template
@@ -29,6 +31,7 @@
 ## Reference Projects Borrowed From
 
 None — this is a new project type. Patterns were derived from:
+
 - The SKILL.md open standard (Anthropic)
 - Competitor analysis of alirezarezvani/claude-skills, daymade/claude-code-skills, levnikolaevich/claude-code-skills
 - SkillsMP marketplace conventions

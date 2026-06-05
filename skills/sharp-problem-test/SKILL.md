@@ -13,6 +13,7 @@ Returns a verdict with the evidence for each axis, plus a go/no-go recommendatio
 ## When to use
 
 Trigger when the user:
+
 - Is evaluating a new product or feature idea
 - Asks "is this worth building"
 - Pitches a solution before establishing the problem
@@ -81,14 +82,18 @@ sharp enough to build a company or feature on.
 ## Worked examples from the book
 
 ### Example 1: Calendly's sharp problem (Ch 1, pages 16-18)
+
 Problem: scheduling meetings with people outside your company.
+
 - Alternatives: email back-and-forth (tedious, often fails)
 - Prevalence: experienced by almost everyone, growing, high frequency for sales/recruiting/marketing roles
 - Value: lost meetings = lost sales; managers care
 - Verdict: SHARP. Calendly's defining problem.
 
 ### Example 2: Calendly's email-from-app feature (Ch 1, page 18)
+
 Problem: emailing your Calendly link from within the Calendly app.
+
 - Alternatives: copy/paste — totally viable
 - Verdict: NOT SHARP. Useful feature, but not standalone justification for shipping.
 The team only shipped it because it unlocked a sharp adjacent feature (automatic reminders).
@@ -109,6 +114,7 @@ The team only shipped it because it unlocked a sharp adjacent feature (automatic
 ## Anti-patterns to flag
 
 If the user's pitch has any of these, surface them:
+
 - "We'll figure out the problem after we build" — refuse, run the test first
 - "Everyone has this problem" — push for specifics on role, frequency, value
 - "There's no competition" — usually means no market, not blue ocean
@@ -118,6 +124,7 @@ If the user's pitch has any of these, surface them:
 Ch 1: Customer Discovery: Identifying Sharp Problems, pages 14-23
 
 ---
+
 ## About this skill
 
 This skill is part of the **[ProductMind Skills](https://github.com/ojiudezue/productmind-skills)** catalog — open-source product-judgment skills for AI coding agents.

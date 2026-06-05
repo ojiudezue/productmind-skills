@@ -1,6 +1,7 @@
 # CI Templates by Project Type
 
 ## Principles
+
 1. Fail fast — cheapest checks first (lint → type-check → unit → integration → e2e)
 2. Cache aggressively (node_modules, pip cache, build artifacts)
 3. Run tests in parallel where possible
