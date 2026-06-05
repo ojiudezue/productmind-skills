@@ -1,21 +1,39 @@
-MIT License
+# License — Split by Artifact Type
 
-Copyright (c) 2026 ProductMind
+This repository uses a split license. See
+[ADR 0005 in BuildingRocketships](https://github.com/ojiudezue/rocketships-gpt/blob/main/docs/adr/0005-license-split.md)
+for the full rationale.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## Skill content — CC BY-SA 4.0
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The following are licensed under
+[Creative Commons Attribution-ShareAlike 4.0 International](./LICENSES/CC-BY-SA-4.0.txt):
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+- `skills/**/SKILL.md`
+- Documentation prose in `docs/**`
+
+**Attribution is required.** Derivative works must be shared under the same
+license. Most skills in this catalog include a portable footer with the
+attribution + license obligation rendered in-place — keep it intact when
+redistributing.
+
+## Tooling and code — MIT
+
+The following are licensed under [MIT](./LICENSES/MIT.txt):
+
+- `scripts/**` (validators, link-checkers, CI helpers)
+- `tests/**`
+- Config files
+
+## External contributions
+
+By submitting a pull request to this repository, contributors agree their
+contribution will be licensed under the same split: skill content under
+CC BY-SA 4.0, tooling under MIT.
+
+## Questions
+
+If a file's licensing is unclear, the per-directory rules above govern. When
+in doubt, treat it as CC BY-SA 4.0 (the more restrictive of the two).
+
+Contact: oji@productmind.co
