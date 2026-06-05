@@ -40,8 +40,10 @@ cp -r skills/new-project-scaffolding /path/to/your/project/.claude/skills/
 | [new-project-scaffolding](skills/new-project-scaffolding/) | Product + Engineering | Scaffolds projects with viability gates, product briefs, market research, and full code infrastructure |
 | [vibememo](skills/vibememo/) | Product + Engineering | Decision trail capture system — persists the "why" behind architectural, product, and strategic decisions as structured JSON + compressed narrative |
 | [sharp-problem-test](skills/sharp-problem-test/) | Product Discovery (Building Rocketships, Ch 1) | Runs the 3-Question Sharpness Test on a product brief. Returns SHARP / NOT_SHARP / NEEDS_MORE_EVIDENCE with evidence per axis, the ≥3x improvement-bar check, and a named analogous case from the book |
+| [reverse-freemium-design](skills/reverse-freemium-design/) | Product Build (Building Rocketships, Ch 5) | Runs the 4-Element Reverse Freemium Design framework. Returns trial length tied to the usage-frequency table, free vs paid feature segmentation, end-of-trial messaging plan, post-trial retention, and the paywalled-final-step anti-pattern check |
+| [pricing-tier-math](skills/pricing-tier-math/) | Product Build (Building Rocketships, Ch 6) | Runs the Cost-Margin-Tier Pricing framework. Takes a bottom-up cost basis and market anchors, returns the cost-derived base price, 3+ tier structure with feature assignment per the 3-factor rule, and add-ons for niche features |
 
-*More book-derived skills landing in waves — the next batch is `reverse-freemium-design` and `pricing-tier-math`. The full 13-skill catalog from Building Rocketships is mirrored from the [RocketshipsGPT agent](https://github.com/ojiudezue/BuildingRocketships) as each agent-side implementation lands. See [docs/product-brief.md](docs/product-brief.md) for the roadmap.*
+*More book-derived skills landing in waves. The full 13-skill catalog from Building Rocketships is mirrored from the [RocketshipsGPT agent](https://github.com/ojiudezue/BuildingRocketships) as each agent-side implementation lands. See [docs/product-brief.md](docs/product-brief.md) for the roadmap.*
 
 ## Skill Quality Standards
 

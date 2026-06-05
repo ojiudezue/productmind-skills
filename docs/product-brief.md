@@ -59,8 +59,8 @@ Per the [RocketshipsGPT](https://github.com/ojiudezue/BuildingRocketships) [dual
 - [ ] `scope-cutter` — Ch 3/4, cutting required-onboarding-steps in half
 
 **Build — monetization and identity choices**
-- [ ] `reverse-freemium-design` — Ch 5, the 4-element reverse-freemium template
-- [ ] `pricing-tier-math` — Ch 6, cost-floor → target-margin → market-anchor pricing
+- [x] [`reverse-freemium-design`](../skills/reverse-freemium-design/) — Ch 5, the 4-element reverse-freemium template
+- [x] [`pricing-tier-math`](../skills/pricing-tier-math/) — Ch 6, cost-floor → target-margin → market-anchor pricing
 - [ ] `customer-id-architect` — Ch 4, GUIDs over emails as primary identifiers
 
 **Ship — measurement and growth**
