@@ -50,9 +50,9 @@ Per the [RocketshipsGPT](https://github.com/ojiudezue/BuildingRocketships) [dual
 ### Discover — finding sharp problems
 
 - [x] [`sharp-problem-test`](../skills/sharp-problem-test/) — Ch 1, the 3-Question Sharpness Test (≥3x improvement floor)
-- [ ] `customer-discovery-week` — Ch 1, the 3-step 1-week discovery process
-- [ ] `five-dim-customer` — Ch 11, the 5-dimension target customer definition
-- [ ] `listening-machine` — Ch 2, the customer feedback machine
+- [x] [`customer-discovery-week`](../skills/customer-discovery-week/) — Ch 1, the 3-step 1-week discovery process
+- [x] [`five-dim-customer`](../skills/five-dim-customer/) — Ch 11, the 5-dimension target customer definition
+- [x] [`listening-machine`](../skills/listening-machine/) — Ch 2, the customer feedback machine
 
 ### Define — choosing what to build
 
@@ -68,8 +68,8 @@ Per the [RocketshipsGPT](https://github.com/ojiudezue/BuildingRocketships) [dual
 
 ### Ship — measurement and growth
 
-- [ ] `vmsoop-strategy` — Ch 11+14, VMSOO-P plus cascading Tier 1/Tier 2 metrics
-- [ ] `growth-lever-picker` — Ch 12, the 10 growth levers scored by ICE
-- [ ] `roadmap-from-strategy` — Ch 14+Epilogue, roadmap as ordered sharp-problem queue
+- [x] [`vmsoop-strategy`](../skills/vmsoop-strategy/) — Ch 7+14, VMSOO-P plus cascading Tier 1/Tier 2 metrics
+- [x] [`growth-lever-picker`](../skills/growth-lever-picker/) — Ch 12, the 10 growth levers scored by ICE
+- [x] [`roadmap-from-strategy`](../skills/roadmap-from-strategy/) — Ch 14+Epilogue, roadmap as ordered sharp-problem queue
 
 The Track B publish order follows whichever skill the agent implements next on Track A. See `docs/strategy/skills-and-agent-plan-v2.md` in BR for the current sequence.
