@@ -64,7 +64,7 @@ Per the [RocketshipsGPT](https://github.com/ojiudezue/BuildingRocketships) [dual
 
 - [x] [`reverse-freemium-design`](../skills/reverse-freemium-design/) — Ch 5, the 4-element reverse-freemium template
 - [x] [`pricing-tier-math`](../skills/pricing-tier-math/) — Ch 6, cost-floor → target-margin → market-anchor pricing
-- [ ] `customer-id-architect` — Ch 4, GUIDs over emails as primary identifiers
+- [x] [`customer-id-architect`](../skills/customer-id-architect/) — Ch 4, GUIDs over emails as primary identifiers
 
 ### Ship — measurement and growth
 
