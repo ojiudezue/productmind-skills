@@ -6,13 +6,13 @@ AI coding assistants have made engineers dramatically more productive at writing
 
 ## Target User
 
-**Multi-skilled builders**: Engineers who care about product outcomes, not just code quality. They use Claude Code (or compatible agents like Codex CLI, Cursor, Gemini CLI) as their daily driver. They want skills that help them think clearly about product decisions *while* they build, not in a separate tool or process.
+**Builders who ship software that matters** — founders, PMs, engineers, and vibe-coders from all walks. They use Claude Code (or compatible agents like Codex CLI, Cursor, Gemini CLI) as a daily driver and want business and product judgment embedded in their tools, not in a separate process. We assume some familiarity with the subject matter — these aren't dumbed down for total beginners (who aren't browsing GitHub anyway) — but you don't need to have read the book to use them.
 
-Secondary audience: Product-minded engineering teams who want to codify their product practices into reusable, shareable skills.
+Secondary audience: product- and business-minded teams who want to codify their practices into reusable, shareable skills.
 
 ## Value Proposition
 
-ProductMind Skills is the only open-source skills collection that treats product thinking as a first-class engineering concern. Every skill blends product judgment with engineering rigor — from scaffolding projects with built-in viability gates, to running market research alongside code generation, to embedding quality tracking into the development workflow.
+ProductMind Skills is the only open-source skills collection that treats **business and product judgment** as a first-class engineering concern. The business-and-product side is the differentiator — every skill blends it with engineering rigor, from scaffolding projects with built-in viability gates, to vetting whether a feature is worth building, to embedding quality tracking into the development workflow.
 
 ## Success Criteria (measurable)
 
@@ -43,9 +43,9 @@ ProductMind Skills is the only open-source skills collection that treats product
 3. How to handle skills that need web search or MCP servers — document requirements or bundle?
 4. Community contribution guidelines — how strict on the product-engineering blend requirement?
 
-## Roadmap — Building Rocketships catalog (added 2026-06-03)
+## Roadmap — [Building Rocketships](https://shop.app/p/7480565334192) catalog (added 2026-06-03; updated 2026-06-21)
 
-Per the [RocketshipsGPT](https://github.com/ojiudezue/BuildingRocketships) [dual-distribution ADR 0004](https://github.com/ojiudezue/BuildingRocketships/blob/main/docs/adr/0004-dual-distribution-strategy.md), 13 book-derived skills will be published to this catalog as each is implemented in the agent. Each ships under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (per [ADR 0005](https://github.com/ojiudezue/BuildingRocketships/blob/main/docs/adr/0005-license-split.md)).
+Book-derived skills are published to this catalog as each is built. They ship under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) for skill content — see [LICENSE](../LICENSE). The catalog is now **14 frameworks** plus the scaffolding and decision-trail tools.
 
 ### Discover — finding sharp problems
 
@@ -72,4 +72,8 @@ Per the [RocketshipsGPT](https://github.com/ojiudezue/BuildingRocketships) [dual
 - [x] [`growth-lever-picker`](../skills/growth-lever-picker/) — Ch 12, the 10 growth levers scored by ICE
 - [x] [`roadmap-from-strategy`](../skills/roadmap-from-strategy/) — Ch 14+Epilogue, roadmap as ordered sharp-problem queue
 
-The Track B publish order follows whichever skill the agent implements next on Track A. See `docs/strategy/skills-and-agent-plan-v2.md` in BR for the current sequence.
+### Compose — vetting decisions across the lifecycle
+
+- [x] [`vet-a-feature`](../skills/vet-a-feature/) — Ch 1–7, the brownfield feature gate. Composes sharpness (≥3x), the sharpness×ease prioritization grid, strategy fit, activation ("aha") fit, and SLC/scope into a single BUILD / BUILD_SMALLER / PARK / SCRAP verdict. The catalog's first orchestrator skill — it does one job (decide whether a feature is worth building) by drawing on several frameworks at once.
+
+New skills land as they're authored; this catalog is the source of truth for what's shipped.

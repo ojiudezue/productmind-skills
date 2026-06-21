@@ -1,8 +1,8 @@
 # License — Split by Artifact Type
 
-This repository uses a split license. See
-[ADR 0005 in BuildingRocketships](https://github.com/ojiudezue/rocketships-gpt/blob/main/docs/adr/0005-license-split.md)
-for the full rationale.
+This repository uses a split license: skill *content* is copyleft (attribution +
+share-alike) so it stays open and credited, while *tooling* is permissive (MIT)
+so integrators have no copyleft surprises.
 
 ## Skill content — CC BY-SA 4.0
 
@@ -36,4 +36,4 @@ CC BY-SA 4.0, tooling under MIT.
 If a file's licensing is unclear, the per-directory rules above govern. When
 in doubt, treat it as CC BY-SA 4.0 (the more restrictive of the two).
 
-Contact: oji@productmind.co
+Contact: <oji@productmind.co>
