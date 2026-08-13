@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acme Home Project — Kanban</title>
+<style>
+  /* Theme via prefers-color-scheme; every color routes through a variable. */
+  :root {
+    --bg: #f5f3ee;
+    --col-bg: #eae7df;
+    --card-bg: #ffffff;
+    --ink: #23211c;
+    --muted: #6f6a5e;
+    --line: #d8d3c6;
+    --accent: #2f6fb0;
+    --stale: #8a5a00;
+    --stale-bg: #f3e3bd;
+    --chip-inbox: #4a90d9;
+    --chip-progress: #e8a33d;
+    --chip-review: #7d6bd0;
+    --chip-shipped: #3a9a5c;
+    --chip-parked: #8a8a8a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181c;
+      --col-bg: #20222a;
+      --card-bg: #2a2d36;
+      --ink: #e7e4dc;
+      --muted: #9a968c;
+      --line: #3a3d47;
+      --accent: #7ab3e8;
+      --stale: #ffb454;
+      --stale-bg: #2b2210;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  header { padding: 18px 22px 6px; }
+  header h1 { margin: 0; font-size: 18px; letter-spacing: 0.01em; }
+  header .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+  /*
+    STALE banner — the freshness contract:
+    The renderer compares meta.last_reconciled in the data file against BOTH
+    the newest git tag AND the newest release-notes file. If either is newer
+    than last_reconciled, the board provably missed a release, and the
+    renderer emits this banner into EVERY generated view (and warns on build /
+    exits non-zero in --check mode). Reconciling the board — moving the
+    shipped cards, then bumping meta.last_reconciled — is what removes it.
+    In this static demo the banner is hard-coded visible.
+  */
+  .stale {
+    background: var(--stale-bg);
+    border: 1px solid var(--stale);
+    border-left: 6px solid var(--stale);
+    border-radius: 6px;
+    padding: 12px 18px;
+    margin: 14px 22px 0;
+  }
+  .stale h2 {
+    margin: 0 0 6px;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--stale);
+  }
+  .stale ul { margin: 4px 0 0 18px; padding: 0; }
+
+  .board {
+    display: flex;
+    gap: 14px;
+    padding: 18px 22px 28px;
+    overflow-x: auto;
+    align-items: flex-start;
+  }
+  .col {
+    flex: 0 0 250px;
+    background: var(--col-bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px;
+  }
+  .col h2 {
+    margin: 2px 4px 10px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--chip, var(--accent));
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .card .id { font-weight: 600; font-size: 12px; color: var(--accent); }
+  .card .title { margin: 3px 0 6px; font-weight: 600; }
+  .card .field { font-size: 12px; color: var(--muted); margin: 2px 0; }
+  .card .field b { color: var(--ink); font-weight: 600; }
+
+  .dispo { margin-top: 8px; display: flex; gap: 6px; }
+  .dispo button {
+    font: 11px/1 system-ui, sans-serif;
+    padding: 5px 9px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--col-bg);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .dispo button:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Acme Home Project — Board</h1>
+  <div class="meta">last reconciled <b>2026-01-02</b> · generated from kanban.data.yaml — never hand-edit this page</div>
+</header>
+
+<div class="stale">
+  <h2>▲ Stale — board has not been reconciled against newer work</h2>
+  <ul>
+    <li>newest release tag v2.4.0 (2026-01-14) is newer than last_reconciled (2026-01-02)</li>
+    <li>newest release-notes file RELEASE_2.4.0.md (2026-01-14) is newer than last_reconciled (2026-01-02)</li>
+  </ul>
+</div>
+
+<div class="board">
+
+  <div class="col">
+    <h2>Inbox (1)</h2>
+    <div class="card" style="--chip: var(--chip-inbox)">
+      <div class="id">GARDEN-4</div>
+      <div class="title">Sprinkler schedule ignores the rain forecast</div>
+      <div class="field"><b>origin</b> — 2026-01-13, noticed while reviewing the water bill</div>
+      <div class="field"><b>next</b> — decompose: forecast source, skip rule, override</div>
+      <div class="dispo">
+        <button onclick="disposition('GARDEN-4','done')">done</button>
+        <button onclick="disposition('GARDEN-4','deferred')">defer</button>
+        <button onclick="disposition('GARDEN-4','declined')">decline</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <h2>In progress (2)</h2>
+    <div class="card" style="--chip: var(--chip-progress)">
+      <div class="id">PANTRY-1</div>
+      <div class="title">Shopping list duplicates items across family members</div>
+      <div class="field"><b>why</b> — two adds within a minute race the sync; last write wins</div>
+      <div class="field"><b>next</b> — merge on normalized item name, add fixture test</div>
+      <div class="dispo">
+        <button onclick="disposition('PANTRY-1','done')">done</button>
+        <button onclick="disposition('PANTRY-1','deferred')">defer</button>
+        <button onclick="disposition('PANTRY-1','declined')">decline</button>
+      </div>
+    </div>
+    <div class="card" style="--chip: var(--chip-progress)">
+      <div class="id">PORCH-2</div>
+      <div class="title">Porch light schedule drifts after clock changes</div>
+      <div class="field"><b>constraint</b> — must never leave the light on past 02:00</div>
+      <div class="field"><b>next</b> — compute from local sunset, not a fixed offset</div>
+      <div class="dispo">
+        <button onclick="disposition('PORCH-2','done')">done</button>
+        <button onclick="disposition('PORCH-2','deferred')">defer</button>
+        <button onclick="disposition('PORCH-2','declined')">decline</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <h2>Review (1)</h2>
+    <div class="card" style="--chip: var(--chip-review)">
+      <div class="id">NOTIFY-2</div>
+      <div class="title">Digest email silently drops when the queue is empty</div>
+      <div class="field"><b>why</b> — silence is ambiguous: quiet day vs broken job</div>
+      <div class="field"><b>next</b> — reviewer sign-off, then ship via --cards NOTIFY-2</div>
+      <div class="dispo">
+        <button onclick="disposition('NOTIFY-2','done')">done</button>
+        <button onclick="disposition('NOTIFY-2','deferred')">defer</button>
+        <button onclick="disposition('NOTIFY-2','declined')">decline</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <h2>Shipped (1)</h2>
+    <div class="card" style="--chip: var(--chip-shipped)">
+      <div class="id">EXPORT-1</div>
+      <div class="title">CSV export mangles unicode → utf-8 with BOM</div>
+      <div class="field"><b>shipped</b> — v2.3.0 (stamped by the release script)</div>
+      <div class="field"><b>evidence</b> — 2026-01-11: re-export opens clean, confirmed</div>
+      <div class="dispo">
+        <button onclick="disposition('EXPORT-1','done')">done</button>
+        <button onclick="disposition('EXPORT-1','deferred')">defer</button>
+        <button onclick="disposition('EXPORT-1','declined')">decline</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <h2>Parked (1)</h2>
+    <div class="card" style="--chip: var(--chip-parked)">
+      <div class="id">PERF-3</div>
+      <div class="title">Dashboard slows on very large boards → paginate</div>
+      <div class="field"><b>revisit trigger</b> — active cards exceed 150</div>
+      <div class="field"><b>next</b> — none until the trigger fires</div>
+      <div class="dispo">
+        <button onclick="disposition('PERF-3','done')">done</button>
+        <button onclick="disposition('PERF-3','deferred')">defer</button>
+        <button onclick="disposition('PERF-3','declined')">decline</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Disposition stub — one-way, human → agent.
+  // POST to your queue endpoint here: a tiny server (or serverless function)
+  // that appends {card_id, action, at} as one JSON line to
+  // kanban.dispositions.pending.jsonl. The agent applies the queue with
+  // operator authority at session start, then deletes the file. The page
+  // never writes the YAML source of truth directly.
+  function disposition(cardId, action) {
+    const entry = { card_id: cardId, action: action, at: new Date().toISOString() };
+    // fetch('/dispositions', { method: 'POST', body: JSON.stringify(entry) })
+    console.log('queued disposition (stub):', entry);
+    alert('Queued (demo): ' + cardId + ' → ' + action);
+  }
+</script>
+
+</body>
+</html>

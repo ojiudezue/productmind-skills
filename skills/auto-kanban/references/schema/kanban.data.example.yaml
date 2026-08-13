@@ -1,0 +1,126 @@
+# kanban.data.example.yaml — annotated example of the auto-kanban source-of-truth file.
+#
+# THIS FILE IS THE BOARD. Every view (markdown, HTML, hosted page) is generated
+# from it and never hand-edited. Keep it valid YAML before every commit:
+#   python3 -c "import yaml; yaml.safe_load(open('kanban.data.yaml'))"
+
+meta:
+  # Bumped to today's date every time the board is reconciled against reality.
+  # The renderer compares this against the newest git tag AND the newest
+  # release-notes file; if EITHER is newer, every view gets a loud STALE banner.
+  last_reconciled: '2026-01-15'
+
+  # Done cards age out of this file into the history file (git is the record).
+  history_file: docs/kanban.history.yaml
+
+  # Optional: where the hosted/live views of this board live. Placeholders —
+  # point these at your own hosting.
+  artifact_url: https://example.com/your-published-board
+  target_host: kanban.example.com
+
+  # Column order for the rendered views. status values on cards must be one of these.
+  columns:
+  - inbox
+  - pre_planning
+  - planned
+  - in_progress
+  - review
+  - shipped          # shipped, organic/live proof still open
+  - waiting_operator # decisions only the human can take
+  - waiting_agent    # things the agent owes
+  - parked           # deliberately deferred, always with a revisit trigger
+
+cards:
+
+# ---------------------------------------------------------------------------
+# 1. A card in flight — shows the full core field vocabulary.
+# ---------------------------------------------------------------------------
+- id: EXPORT-1
+  title: CSV export mangles unicode -> emit utf-8 with BOM
+  thread: exporter                # workstream, for grouping across the board
+  status: in_progress
+  approval: explicit              # unreviewed / implied / explicit / blocked
+  approved_by: 'operator 2026-01-12 ("go ahead, fix the export")'
+  origin:
+    date: '2026-01-10'
+    gist: user report of garbled names when opening the export in a spreadsheet app
+  why: the spreadsheet app assumes a legacy encoding without a byte-order mark;
+    utf-8-sig is the compatible fix
+  constraints:
+  - must not change the column order — a downstream import script depends on it
+  parked_alts:
+  - 'offer an encoding picker in the UI — rejected: one correct default beats a knob'
+  knobs: []                       # named configurables this card introduces, if any
+  parsimony:
+    problem: exported names with non-ASCII characters are unreadable for every user
+    verdict: BUILD                # BUILD / SIMPLIFY / PARK / DROP
+  next: add a regression test with a non-ASCII fixture, then open the PR
+  refs:
+  - docs/plans/export-fix.md
+
+# ---------------------------------------------------------------------------
+# 2. A shipped card — released version stamped by the deploy-gate, plus
+#    live-validation evidence written back onto the card.
+# ---------------------------------------------------------------------------
+- id: NOTIFY-2
+  title: Digest email silently drops when the queue is empty -> send a "nothing new" note
+  thread: notifications
+  status: shipped
+  approval: explicit
+  approved_by: 'operator 2026-01-05 ("yes, ship it")'
+  origin:
+    date: '2026-01-03'
+    gist: operator asked why no digest arrived on a quiet day
+  why: silence is ambiguous — the user cannot tell "nothing happened" from "the job broke"
+  next: 'organic proof: confirm the empty-day note arrives on the next quiet day'
+  shipped_version: '2.4.0'        # written automatically by the release script's --cards gate
+  organic_evidence:
+  - '2026-01-14: empty-day note observed in the operator inbox — hypothesis confirmed'
+  refs:
+  - docs/releases/RELEASE_2.4.0.md
+
+# ---------------------------------------------------------------------------
+# 3. A parked card — parked is NOT done; it always carries a revisit trigger.
+# ---------------------------------------------------------------------------
+- id: PERF-3
+  title: Dashboard loads slowly on large boards -> paginate columns
+  thread: dashboard
+  status: parked
+  approval: unreviewed
+  origin:
+    date: '2026-01-08'
+    gist: agent noticed render time growing while regenerating views
+  why: only a problem past ~200 active cards; current board holds 40
+  parsimony:
+    problem: render time grows linearly with card count and may become noticeable
+    verdict: PARK
+  revisit_trigger: active card count exceeds 150, or render time exceeds 2 seconds
+  next: none until the trigger fires — then promote to pre_planning
+  refs: []
+
+# ---------------------------------------------------------------------------
+# 4. A card waiting on the human — records exactly which decision is needed.
+# ---------------------------------------------------------------------------
+- id: BACKUP-1
+  title: Nightly backup target is full -> pick a retention policy
+  thread: infra
+  status: waiting_operator
+  approval: blocked
+  origin:
+    date: '2026-01-11'
+    gist: agent found backup failures in the job log while investigating disk alerts
+  why: retention is a cost/risk trade-off only the human can make
+  operator_decision: 'choose: keep 30 days (larger disk) vs keep 7 days (current disk)'
+  next: apply whichever retention policy the operator picks
+  refs: []
+
+# ---------------------------------------------------------------------------
+# Disposition queue — lives in a SEPARATE append-only JSONL file (e.g.
+# kanban.dispositions.pending.jsonl), written by the hosted board's buttons,
+# never by the agent. One entry per line; the agent applies each with operator
+# authority at session start, then deletes the file. Example line:
+#
+#   {"card_id": "PERF-3", "action": "declined", "at": "2026-01-15T08:30:00Z"}
+#
+# Actions: done / deferred / declined (see SKILL.md "Operator dispositions").
+# ---------------------------------------------------------------------------

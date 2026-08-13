@@ -49,10 +49,29 @@ self-contained — no dependencies beyond a YAML parser for the optional render 
    agent floats mid-turn gets captured as a card before the agent acts on it.
 3. Before any planning doc, the agent harvests the relevant cards (origin, why, constraints,
    rejected alternatives) into the plan.
-4. Wire the ship gate: make your release script require `--cards ID[,ID...]` and write
-   `status: shipped` + the version onto those cards after a successful push.
+4. Wire the ship gate: make your release script require `--cards ID[,ID...]` — refusing to
+   deploy without it (with an explicit, logged `--no-cards` escape for docs-only releases) —
+   and write `status: shipped` + the version onto those cards after a successful push.
 
-See `SKILL.md` for the full card schema, cadence, and anti-patterns.
+See `SKILL.md` for the full card schema, cadence, and anti-patterns. An annotated example data
+file lives at `references/schema/kanban.data.example.yaml`, and a self-contained demo board
+(light/dark, STALE banner, disposition buttons) at
+`references/dashboard/board.example.html`.
+
+## Operator dispositions — drive the board without the agent
+
+Once the board is hosted, the human will read it while the agent is offline. Each card on the
+demo board carries `done` / `deferred` / `declined` buttons that POST a
+`{card_id, action, at}` line to an append-only queue file — never editing the YAML directly.
+At the next session start the agent applies the queue with operator authority (apply, don't
+relitigate), deletes it, re-renders, and commits. One-way, human → agent.
+
+## Watch results write back
+
+When a shipped card's live validation lands (confirmed / violated / pending), the result is
+written back onto the card the same session — confirmed evidence accumulates on the card,
+a violation returns the card to review. The board, not a monitoring report, is where
+"is it actually done?" gets answered.
 
 ## Drive a simple web page
 
@@ -62,9 +81,12 @@ The pattern:
 1. **Read the YAML**, group cards by `status`.
 2. **Emit a single self-contained `board.html`** — inline CSS, no external assets — with one
    column per status and a color-coded chip per card.
-3. **Regenerate on every commit** (a git pre-commit hook or a CI step that runs the script and
-   commits/publishes the output), then serve `board.html` from any static host — GitHub Pages,
-   an S3 bucket, an internal file server — or just open it locally in a browser.
+3. **Regenerate on every data commit**, then serve `board.html` from any static host — GitHub
+   Pages, an S3 bucket, a tiny web server on a spare box — or just open it locally in a
+   browser. When multiple clones or worktrees edit the repo, a **cron pull-and-render job on
+   the hosting machine is more robust than git hooks**: hooks fire per-clone and someone is
+   always missing one, while a dumb pull-and-render loop every few minutes converges no matter
+   who committed. The whole hosting pattern is: static file + tiny server + cron refresh.
 4. **Staleness banner:** compare `meta.last_reconciled` against the newest git tag or release
    notes file; if the repo has moved past the board, render a loud banner across the top of the
    page. The page tells you it's stale — nobody has to remember to ask.
