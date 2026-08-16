@@ -61,10 +61,26 @@ file lives at `references/schema/kanban.data.example.yaml`, and a self-contained
 ## Operator dispositions — drive the board without the agent
 
 Once the board is hosted, the human will read it while the agent is offline. Each card on the
-demo board carries `done` / `deferred` / `declined` buttons that POST a
+demo board carries `done` / `deferred` / `declined` buttons — and early-stage (intake) cards
+add **`approve`** (out-of-band go-ahead with the same authority as an in-chat "yes") and
+**`investigate`** (flags the card for the next bounded triage sweep). Buttons POST a
 `{card_id, action, at}` line to an append-only queue file — never editing the YAML directly.
 At the next session start the agent applies the queue with operator authority (apply, don't
 relitigate), deletes it, re-renders, and commits. One-way, human → agent.
+
+**The apply step is force-gated, not remembered:** the render script's `--check` mode exits
+with a distinct non-zero code while the queue is non-empty, so a session cannot report status
+past an unapplied button-tap. (A pending chip on the page is a banner; the exit code is the
+mechanism.)
+
+## Intake hygiene — bounded lull investigation
+
+Uninvestigated intake cards are phantom load: they look like work while nobody knows if
+they're duplicates, already shipped, config-only, or real. During lulls, the agent sweeps
+intake cards through a context-wide investigation under a hard token budget (one agent per
+card, no fan-out, a per-lull cap) and records one of six verdicts — duplicate/adjacent,
+already-shipped, config-only, dead, real, or unresolved-in-budget. An investigated card moves
+or closes; it never returns to plain intake.
 
 ## Watch results write back
 

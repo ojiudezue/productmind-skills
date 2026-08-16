@@ -4,6 +4,18 @@
 
 Most skills repos help you write code faster. ProductMind Skills help you **build the right thing**. The business and product judgment is the part no other skills collection gives you — that's the differentiator.
 
+## Recent updates
+
+- **2026-08** — `auto-kanban` grew a full operator-disposition loop: `approve`/`investigate`
+  buttons on intake cards, a force-gated queue-apply (distinct `--check` exit code — a chip is
+  a banner, the exit code is the mechanism), and a bounded lull-investigation doctrine with a
+  six-verdict vocabulary for intake triage. Plus production field notes (test isolation from
+  the live queue; end-to-end button→API verification).
+- **2026-08** — `auto-kanban` hosted-board pattern hardened: ship-gate `--cards` flag,
+  staleness contract, cron pull-and-render hosting, example schema + self-contained demo board.
+- **2026-07** — `vibememo` decision-trail skill refinements.
+
+
 ## What's Different
 
 Every skill blends business and product judgment with engineering execution:

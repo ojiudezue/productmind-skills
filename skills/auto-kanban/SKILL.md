@@ -132,6 +132,15 @@ the session-start check cannot pass while a button-tap is pending. Scope the fai
 `--check` only, so the hosted-page render still deploys (with pending chips visible) even when
 the queue is waiting. A chip is a banner; the exit code is the mechanism.
 
+Two field notes from running this mechanism in production: **(1) isolate the renderer's tests
+from the live queue** — a `--check` exit-code test that doesn't pass an explicit (empty) queue
+path inherits the repo's real pending file and fails whenever a genuine disposition is waiting;
+point tests at a tmp queue path and add a dedicated exit-code test that seeds a fake pending
+entry. **(2) verify the whole button→queue→apply loop end-to-end after adding an action** — the
+hosted page's API may validate actions against a whitelist regex; a new button that renders fine
+can still be silently 400'd server-side. Probe-POST each new action and clean the probe entries
+from the queue before the next session-start apply.
+
 ## Inbox hygiene — bounded lull investigation
 
 An uninvestigated intake card is **phantom load**: it sits on the backlog looking like work
