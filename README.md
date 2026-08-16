@@ -13,7 +13,7 @@ Most skills repos help you write code faster. ProductMind Skills help you **buil
   the live queue; end-to-end button→API verification).
 - **2026-08** — `auto-kanban` hosted-board pattern hardened: ship-gate `--cards` flag,
   staleness contract, cron pull-and-render hosting, example schema + self-contained demo board.
-- **2026-07** — `vibememo` decision-trail skill refinements.
+- **2026-07** — repo hygiene: markdownlint CI + auto-fixes across skills.
 
 
 ## What's Different
