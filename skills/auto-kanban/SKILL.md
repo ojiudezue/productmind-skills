@@ -278,3 +278,28 @@ Before a card leaves Pre-planning, give it a parsimony verdict: is the problem s
 version that captures most of the benefit? Record **BUILD / SIMPLIFY / PARK / DROP** on the
 card. Reaching "good idea, not worth it now — park with a trigger" is a success of the gate,
 not a failure.
+
+## Producer AND consumer — check both, always
+
+If a rule set codifies only *"who reads this value"*, that asymmetry becomes a blind spot: every
+reviewer looks downstream and nobody reads how the value is **made**. Observed failure: a
+household occupancy count doubled its own residents and flipped a whole-house mode, because a
+default-ON *additive* derivation silently overwrote a *subtractive* one while both of its
+dedup defenses had gone inert — their shared dependency (a recognition subsystem) had failed in
+a *different*, separately-investigated incident. Every audit asked who consumed the count. None
+asked how it was computed.
+
+**Both checks belong in any plan or investigation that touches a value:**
+
+- **Producer:** How many derivations exist, and which one wins? What does each depend on — and
+  is that dependency healthy *right now*? Is this a plumbing fix or an arithmetic fix ("the
+  right inputs feed it" ≠ "it computes the right number")? Compare against **external ground
+  truth**, never against another internal number that shares its assumptions.
+- **Consumer + call site:** Who reads it, on which path, trust-decision or display, and where
+  is it wired in.
+
+**Corollary — acceptance criteria must discriminate.** State what the observation looks like
+under the fix *and* under a plausible different failure. If they are identical, the criterion
+proves nothing: "the count now exceeds the identified total" was accepted as proof that a
+plumbing fix worked, when it was equally the signature of the double-count bug that had
+replaced it.

@@ -6,6 +6,9 @@ Most skills repos help you write code faster. ProductMind Skills help you **buil
 
 ## Recent updates
 
+- **2026-08** — `auto-kanban`: producer-AND-consumer discipline (a consumer-only rule set is a
+  structural blind spot) plus the discriminating-acceptance-criteria corollary, both earned from
+  a real double-count defect.
 - **2026-08** — `auto-kanban` grew a full operator-disposition loop: `approve`/`investigate`
   buttons on intake cards, a force-gated queue-apply (distinct `--check` exit code — a chip is
   a banner, the exit code is the mechanism), and a bounded lull-investigation doctrine with a
