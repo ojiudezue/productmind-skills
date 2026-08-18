@@ -53,6 +53,11 @@ self-contained — no dependencies beyond a YAML parser for the optional render 
    deploy without it (with an explicit, logged `--no-cards` escape for docs-only releases) —
    and write `status: shipped` + the version onto those cards after a successful push.
 
+Every card carries a **plain-language `problem_solution`** (Problem: … Solution: …) written for a
+reader who wasn't in the room — jargon and file refs go in `refs`, not the framing — plus
+`created`/`updated` timestamps and a `refinement_status` (initial vs refined) so staleness and
+maturity show at a glance.
+
 See `SKILL.md` for the full card schema, cadence, and anti-patterns. An annotated example data
 file lives at `references/schema/kanban.data.example.yaml`, and a self-contained demo board
 (light/dark, STALE banner, disposition buttons) at

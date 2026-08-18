@@ -6,6 +6,9 @@ Most skills repos help you write code faster. ProductMind Skills help you **buil
 
 ## Recent updates
 
+- **2026-08** — `auto-kanban`: cards gain `created`/`updated` timestamps, a `refinement_status`
+  (initial vs refined), and a **mandatory plain-language `problem_solution`** — written for a
+  reader who wasn't in the room, jargon kept out of the framing. Renderer surfaces all four.
 - **2026-08** — `auto-kanban`: producer-AND-consumer discipline (a consumer-only rule set is a
   structural blind spot) plus the discriminating-acceptance-criteria corollary, both earned from
   a real double-count defect.

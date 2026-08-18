@@ -39,11 +39,20 @@ cards:
   title: CSV export mangles unicode -> emit utf-8 with BOM
   thread: exporter                # workstream, for grouping across the board
   status: in_progress
+  created: '2026-01-10 09:12'      # set once when the card is born
+  updated: '2026-01-12 15:40'      # bumped on every material edit
+  refinement_status: refined       # reworked since first written; the `refinement` trail shows how
+  problem_solution:               # MANDATORY — plain language, readable by anyone
+  - 'Problem: when users open the exported file in a spreadsheet app, names with accents or
+     non-English characters come out garbled and unreadable. Solution: write the file in an
+     encoding the spreadsheet app recognises by default, so names display correctly.'
   approval: explicit              # unreviewed / implied / explicit / blocked
   approved_by: 'operator 2026-01-12 ("go ahead, fix the export")'
   origin:
     date: '2026-01-10'
     gist: user report of garbled names when opening the export in a spreadsheet app
+  refinement:                     # append-only; length = how much the idea was reworked
+  - 'user asked "why not just strip the accents" -> keep the characters, fix the encoding instead'
   why: the spreadsheet app assumes a legacy encoding without a byte-order mark;
     utf-8-sig is the compatible fix
   constraints:

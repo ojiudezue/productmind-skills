@@ -191,6 +191,9 @@ mode it kills:
 | Field | Kills this leak |
 |---|---|
 | **Status / Thread** | which workstream — prevents cross-thread confusion |
+| **Created / Updated** (date + time) | staleness and churn — a card untouched for weeks, or thrashing daily, is visible at a glance |
+| **Refinement status** (initial vs refined) | whether the plan is as-first-written or has been reworked — a reader knows if it's a raw idea or a hardened one |
+| **Problem / Solution** (plain language — mandatory) | the core — what is wrong and what fixes it, in words anyone can read. See "Problem/Solution framing" below |
 | **Origin** (date + one-line gist of the originating push) | the origin pointer — full intent stays reconstructable after the message scrolls out of context |
 | **Why** | rationale — a settled decision doesn't get re-litigated in a later session |
 | **Constraints** | musts stated in passing ("must never auto-send", "keep the URL stable") that otherwise evaporate |
@@ -203,10 +206,17 @@ Card template (as it appears in the YAML):
 
 ```yaml
 - id: CARD-1
-  title: One-line problem -> solution statement
+  title: One-line plain-language problem -> solution statement
   thread: area              # workstream
   status: inbox             # inbox / pre_planning / planned / in_progress /
                             # review / shipped / waiting_user / waiting_agent / parked
+  created: '2026-01-01 14:30'    # date + time the card was born. Set once, never changed.
+  updated: '2026-01-02 09:15'    # date + time of the last material edit. Bump on EVERY edit.
+                                 # created == updated on a new card.
+  refinement_status: initial     # 'initial' (as first written) or 'refined' (reworked since).
+  problem_solution:         # MANDATORY, plain language (see "Problem/Solution framing" below).
+  - 'Problem: <what is wrong, in plain words a non-expert reads once and gets>.
+     Solution: <what we will do about it, same plain words>.'
   approval: unreviewed      # unreviewed / implied / explicit / blocked
   origin:
     date: '2026-01-01'
@@ -214,10 +224,54 @@ Card template (as it appears in the YAML):
   why: rationale, so the decision is not re-litigated
   constraints: []
   parked_alts: []           # rejected options (+ why)
+  refinement: []            # append-only challenge -> sharpened-form beats; length = how much reworked
   knobs: []                 # named configurables this card introduces
   next: single next action
   refs: []                  # docs / commits / reviews
 ```
+
+## Problem/Solution framing — plain language, mandatory
+
+Every card carries a `problem_solution` written so **a person who was not in the room** — the
+user weeks later, a teammate, a future agent with no context — reads it once and understands both
+what is wrong and what you intend to do. Two rules:
+
+1. **Problem then Solution, explicitly.** State the problem as its own sentence (what is broken or
+   missing, and why it matters), then the solution as its own sentence (what you will do). Not one
+   blurred clause.
+2. **Plain, non-jargon language.** Write it for a smart reader who does NOT carry the codebase in
+   their head. Acronyms, file:line refs, internal symbol names, and shorthand are a *memory
+   burden* — they force the reader to reconstruct context the card should have supplied. Put the
+   dense detail where it belongs (a `refs:` pointer, a forensic key, the reasoning log) and keep
+   the problem/solution readable on its own.
+
+This does **not** mean dumbing down the engineering — it means the entry cannot be legible *only*
+to the person who wrote it that night. If a sentence needs a symbol name to be true, name it once
+and say in words what it does.
+
+> **Too much jargon (memory burden):** "P8 exterior count STRANDED + naive: `count_deduped()`
+> live w/ ZERO consumers; `_calc_sum` sums one bit/sensor (no dedup) -> retire per-sensor sum for
+> the deduped path."
+>
+> **Plain (anyone reads it once):** "**Problem:** two systems count the same thing and disagree —
+> one counts a single item once per sensor that sees it (so one thing can read as three), and the
+> accurate one isn't shown anywhere. **Solution:** show the accurate count; keep the rough one as
+> a never-misses backup. (Details in `refs`.)"
+
+The plain version is longer in words but far cheaper to *read* — no decoding. Optimize for the
+reader's effort, not the writer's. **Retro-fix as you touch:** don't mass-rewrite the board; when
+you next edit any card whose problem/solution is jargon-dense, rewrite that one plainly in the
+same edit (and bump `updated`). The board converges through the update hooks, not a big-bang pass.
+
+## Timestamps and refinement status — hooks, not memory
+
+- `created` is set once and never changed. `updated` is bumped to the current date+time on **every
+  material edit** — it rides the same update hooks that govern the rest of the board.
+- `refinement_status` starts at `initial`; flip it to `refined` the first time the card's plan or
+  scope is reworked (not a mere status-column move). The `refinement` trail's length then shows
+  *how much*. Together they answer, at a glance: *raw first idea, or been through the wringer?*
+- The renderer surfaces `created` / `updated` / `refinement_status` on each card in both the
+  Markdown board and the hosted page, so staleness and maturity are visible without opening the YAML.
 
 ## Columns
 
