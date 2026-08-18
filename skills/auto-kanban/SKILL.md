@@ -296,9 +296,16 @@ so they drift under load. Bind every board update to a checkpoint that already h
 3. **Pre-planning harvest:** before writing any planning doc, harvest the relevant cards —
    Origin / Why / Constraints / Parked-alts / Knobs flow straight into the plan. This is the
    anti-entropy handoff from chat to plan.
-4. **Turn end:** reconcile — move cards between columns, write one-line dispositions, re-run
+4. **Before dispatching a build — board maintenance for freshness.** BEFORE an agent starts a
+   build / implementation task, move the target card to In-progress *then*, not at turn-end — a
+   card must never sit in Planned / Pre-planning while its build is actually running; the board
+   should reflect what is happening the moment it starts. While you're there, quick-reconcile the
+   sibling cards the build touches (dependencies, parked-alts, cards it will close). This moves
+   work into In-progress sooner and keeps the board honest during long builds instead of lurching
+   only at turn boundaries.
+5. **Turn end:** reconcile — move cards between columns, write one-line dispositions, re-run
    the renderer so committed views match the data.
-5. **Release:** the ship gate (above) marks cards shipped automatically.
+6. **Release:** the ship gate (above) marks cards shipped automatically.
 
 ## Anti-patterns
 
