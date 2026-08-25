@@ -12,6 +12,7 @@ anti-pattern). A **warn**-level trip is noted but doesn't cap the verdict.
 | **Sales-trial gating in a product-led-growth motion** | warn | Ch 5, p78 | "The antithesis of product-led growth — least generous, least psychologically safe, highest-friction." |
 
 ## How to apply
+
 - Name the tripped pattern, its chapter, and `refuse` vs `warn`.
 - For a `refuse`: can the feature survive if the anti-pattern is removed? If yes → PARK
   with the fix as the revisit trigger. If the anti-pattern *is* the feature → SCRAP.
