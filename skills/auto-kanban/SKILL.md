@@ -45,6 +45,28 @@ Two failure modes this system kills:
 - **Reconciliation failure** — stale context is carried forward (the agent nags the user about
   something they already did, or re-plans work that already shipped).
 
+## When to load this skill — invocation points
+
+This skill is meant to be **loaded at session start automatically** and re-entered at specific
+events, not left to memory. Two mechanisms guarantee the session-start load: a `SessionStart`
+hook that injects a load reminder + disposition/stale check, and a project-instructions line
+that names it. Load it at **every** point below:
+
+| Invocation point | Why |
+|---|---|
+| **Session start** (auto — hook + project instructions) | Read the board, apply queued dispositions, run the renderer's `--check`, reconcile before reporting status. |
+| **Every user push / new request** | Capture the card(s) the same turn, before acting. |
+| **Any mid-turn discovery** (a bug/knob/constraint inside a tool result) | Card it before continuing — mid-turn finds are the most fragile. |
+| **Before writing a planning doc** | Harvest the relevant cards into the plan (the anti-entropy handoff). |
+| **Before dispatching a build** | Board maintenance — move the target card to In-progress, reconcile siblings. |
+| **Deploy / commit / release write-back** | Reconcile In-progress → Review → Shipped (release-coupled gate). |
+| **Turn end** (state changed) | Move cards, re-render, redeploy the hosted view. |
+| **Grooming / lull / overnight** | Sweep, dedupe, link, AND score (`rank:` inputs) — ranking is part of grooming. |
+| **Picking "what's next"** | The ranked board is the source of the next task — drive from it, don't ask. |
+
+If the skill is already loaded this session, re-entry is cheap — follow it; do not re-ask whether
+to load it.
+
 ## The one rule: capture-first
 
 Every user push AND every pre-planning idea the agent generates lands in the data file as a card
@@ -52,6 +74,16 @@ Every user push AND every pre-planning idea the agent generates lands in the dat
 in the transcript. This includes the agent's own mid-turn finds (bugs, config knobs, risks
 surfaced inside a tool result) — those are the most fragile, because nothing else will ever
 re-raise them.
+
+**Capture-at-handoff — the sibling failure to capture-at-turn.** Session-close handoff notes and
+decision-journal / vibememo entries routinely record *forward decisions* ("the real fix is a RAM
+upgrade", "next we should migrate X") that never become cards, because the handoff-writing path
+does not route through card creation. The result is a decision that is documented but invisible
+to every status-first read of the board — the exact loss capture-first exists to prevent, just
+displaced to the end of the session. **Rule: writing a handoff or a decision-trail entry is a
+capture trigger.** Every forward-looking decision in it must be minted as a card in the same
+commit. If it is worth writing down for the next session, it is worth a card the next session can
+actually see.
 
 ## Architecture — structured data as the source of truth
 
@@ -69,12 +101,20 @@ The board is **data**, not prose:
   worktrees edit the repo, some editor will always be missing the hook. A dumb loop that pulls
   and re-renders every few minutes converges no matter who committed from where.
 - **Staleness banner (the freshness contract):** the data file carries `meta.last_reconciled`.
-  The renderer compares that date against BOTH the newest git tag AND the newest release-notes
-  file; if **either** is newer, the board provably missed a release — the renderer renders a
-  loud STALE banner into *every* view (markdown, HTML, hosted page), warns on build, and exits
-  non-zero in `--check` mode. Reconciling the board (moving the shipped cards, then bumping
-  `meta.last_reconciled`) is what clears it. A board that must be *interrogated* for staleness
-  is not a mechanism; a banner that appears by itself is.
+  The renderer compares that date against the newest signal of *shipped work* and, if any is
+  newer, renders a loud STALE banner into *every* view (markdown, HTML, hosted page), warns on
+  build, and exits non-zero in `--check` mode. Reconciling the board (moving the shipped cards,
+  then bumping `meta.last_reconciled`) is what clears it. A board that must be *interrogated* for
+  staleness is not a mechanism; a banner that appears by itself is.
+  - **Wire the trigger to what THIS repo actually moves — not to a signal it never emits.**
+    The original design keyed only on the newest git tag + newest release-notes file. That is
+    silent in any repo that ships without tagging or writing release notes (observed in
+    production: 26 work commits, board 2 weeks stale, banner never fired because the repo has
+    zero tags). **The load-bearing trigger is the newest WORK commit** — the newest commit
+    touching any file *other than the board's own files* (exclude `kanban/*`, the rendered
+    views, and the render script itself, so a pure reconcile commit does not re-trip it). Keep
+    the tag/release-note checks as additive, but the commit check is the one that fires. A
+    banner wired to the wrong signal fails exactly as open as no banner at all.
 - **History:** done cards age out of the active data file into `kanban.history.yaml` rather
   than bloating the board. Git history is the durable record.
 
@@ -98,6 +138,15 @@ banner and session-start checks below it are soft backups, never substitutes:
 - **Safety rule:** a failed board write must never abort a deploy that has already pushed.
   Write after the push succeeds; warn loudly on failure; never exit non-zero post-push. A stale
   board is strictly better than a half-released version.
+
+**Rung 1 only bites if shipping actually runs through it.** In a repo that deploys by many
+paths that were never built to call the release script — `pct push`, `vercel --prod`, ad-hoc
+host scripts, a session-close handoff commit — the ship gate is simply bypassed and the board
+rots anyway. Do not assume one release ritual. Instead **hook the reconcile onto the real
+deploy paths**: add a post-deploy step (a git `post-commit`/`post-push` hook, or a line at the
+end of each deploy script) that runs `render_board.py --check` and surfaces its non-zero exit.
+That converts every real shipping path into a reconcile prompt, so the forcing function follows
+the work instead of waiting at a door nobody uses.
 
 ## Operator dispositions — a one-way human-to-agent queue
 
@@ -228,6 +277,19 @@ Card template (as it appears in the YAML):
   knobs: []                 # named configurables this card introduces
   next: single next action
   refs: []                  # docs / commits / reviews
+  rank:                     # all optional — the board ranks on defaults until these are set
+    value: 5                # 1-10, user / $ / safety / correctness impact (default 5)
+    time_criticality: 3     # 1-10, how fast the cost of delay grows (default 3)
+    effort: 5               # fibonacci job-size; omit to derive from a tier tag
+    foundational: 0         # 0-10, platform-piece leverage that link fan-out misses (default 0)
+  links:                    # cards are a graph, not a list — every link carries a one-line context
+    blocks: []              # cards that cannot proceed until this lands
+    blocked_by: []          # what this waits on — mirrors the other card's `blocks`
+    related: []             # same family, no dependency
+    parent:                 # the card whose fix subsumes this one
+    sibling_of:             # two faces of one problem
+    superseded_by:          # this card's premise was replaced (link, don't delete)
+    context: 'ONE SENTENCE PER LINK saying WHY it is linked — a bare id is noise.'
 ```
 
 ## Problem/Solution framing — plain language, mandatory
@@ -284,6 +346,18 @@ criteria) → `In progress` → `Review` → `Shipped` — plus three side lanes
 - `Parked` — deliberately deferred, always with a written revisit-trigger. Parked is not done:
   when a trigger fires, the card is READY, not forgotten.
 
+**The `next` of a `waiting_user` card must open with the USER's action verb, not the agent's.**
+The card is in this lane because the ball is in the human's court, so its `next` must name the
+concrete thing *they* do — **APPROVE** (scoped, needs a go/no-go) · **PICK** (a choice between
+named options A/B) · **ANSWER** / **VERIFY** (a fact only they know) · **DO** (a physical or
+external act) · **REVIEW** (read a delivered doc). Write it as `VERB: <the ask> -> <what I do on
+your answer>`, so the human sees their decision first and the downstream work second. A `next`
+that opens with the *agent's* verb ("Add the OFF path…", "Run the reviews…") is the drift this
+kills: it reads as work parked on the human when it is really the agent's work waiting on one
+input, and it hides what is actually being asked for. The most common real action is APPROVE or
+PICK — if a card can't reduce to one of the five verbs, it may be mislaned work the agent can
+drive under implied approval.
+
 ## Cadence — bind updates to events, not to a clock
 
 Clock-based cadences ("update the board every 30 minutes") rely on remembering a separate chore,
@@ -339,6 +413,148 @@ Before a card leaves Pre-planning, give it a parsimony verdict: is the problem s
 version that captures most of the benefit? Record **BUILD / SIMPLIFY / PARK / DROP** on the
 card. Reaching "good idea, not worth it now — park with a trigger" is a success of the gate,
 not a failure.
+
+## Ranking & sequencing — computed, not eyeballed
+
+Cards are not a flat list, and ranking is **computed, not eyeballed** — a deterministic score so
+the drive-loop picks the same "next" every time and the renderer can show it. The model is
+**WSJF** (Weighted Shortest Job First): cost-of-delay over job-size.
+
+```
+WSJF = (value + time_criticality + unblock) / effort          # rounded to 1 decimal
+```
+
+| Factor | Range | Source |
+|---|---|---|
+| **value** | 1–10 | `rank.value` (default **5**) — user / $ / safety / correctness impact |
+| **time_criticality** | 1–10 | `rank.time_criticality` (default **3**); a card tagged live-broken floors at **8** — how fast the cost of delay grows |
+| **unblock** | 1–10 | **computed** (below) — never hand-stored, so it cannot drift |
+| **effort** | fib | `rank.effort` override, else from a tier tag: T1=2, T2=5, T2-DB=8, T3=13, untiered=5 |
+
+**`unblock` is leverage, and leverage is more than links.** A platform piece that everything
+quietly stands on is a true unblock even when no card drew the edge, so:
+
+```
+unblock = min(10, max( 2 + 2×(#cards this blocks),  foundational ))
+```
+- link component `2 + 2×fanout` — from this card's `links.blocks` plus the reverse of others'
+  `blocked_by`.
+- `foundational` — `rank.foundational` (0–10) set on genuine platform pieces, or a floor of **6**
+  when tagged a platform-enabler / shared-primitive, else 0. The larger wins. When you build a new
+  primitive many cards will consume (a shared resolver, a core producer, the test harness),
+  set its `foundational` the same turn — its leverage is otherwise invisible.
+
+**The renderer computes WSJF — it is a pure function of the card data.** So it works on *every*
+card via the defaults and sharpens as `rank:` inputs are set; you never renumber by hand.
+
+### Ordering — per-lane, at all times
+
+**Within EVERY lane, cards render first→last by WSJF descending** (ranks are *per-lane*, so each
+lane shows its own #1, #2, …). Ties break by: (1) **batch-affinity** with an in-progress card
+(ship the batch together), (2) **unblock** desc, (3) **oldest `updated`** (anti-starvation — a
+card never rots at the bottom forever). The one exception is the shipped/done lane, which renders
+newest-first (WSJF is meaningless once shipped). Each card header shows
+`#<lane-rank> · WSJF X.X · (v… tc… u… / e…)`, plus a `⚠ default-scored` marker when a card is
+still running on tier + link defaults — so scoring effort lands where it matters.
+
+### Selection — display ranks per lane, the loop picks globally
+
+Display is per-lane, but the **drive-loop picks the globally highest-WSJF card that passes the
+eligibility filter** — deps (`blocked_by`) all done, approval not blocked, and (for the highest
+tier) approval explicit. That card is always some lane's #1, so the per-lane #1s are the candidate
+pool and the agent takes the best of them. Never start a card whose dependency is unmet, however
+high its raw score.
+
+### Re-evaluate on every move — and score AS you groom
+
+Two things keep ranks honest:
+
+1. **Ranks recompute on every render.** WSJF is a pure function of the data, so re-running the
+   renderer after any change re-orders every lane automatically — a card moved between lanes lands
+   at its correct per-lane rank with no manual renumbering. This is *why* the turn-end render hook
+   is load-bearing: a lane move without a re-render leaves the shown order stale. **Render after
+   every status move.**
+2. **But the score INPUTS are not automatic — revisit them when the card materially changes.** A
+   lane move often changes what the card is worth or costs: promotion sharpens `effort`; a
+   measurement that lands changes `value`; a dependency clearing raises other cards' `unblock`.
+   When you move or materially edit a card, re-check its `rank:` inputs in the same edit, exactly
+   as you re-check its `status` and `links`.
+
+**Ranking is a core part of grooming, not a separate chore.** Every groom pass — the inbox sweep,
+an overnight reconcile, a disposition — sets or refreshes the card's `rank:` inputs (at minimum
+`value` and `effort`; `foundational` for platform pieces) alongside its verdict and links. A
+groomed board is not just correctly-laned and de-duped — it is *scored*, so the drive-loop can
+pick from it. An un-scored card after grooming is an unfinished groom; the `⚠ default-scored`
+marker is the tripwire for cards the sweep skipped.
+
+## Drive from the board — motion, not permission-seeking
+
+Each card carries an **approval** state (`unreviewed` / `implied` / `explicit` / `blocked`) so
+the agent can plough independent work without waiting, while never ploughing into things that
+need a human call. The default posture is **motion, not permission-seeking**: a groomed, ranked
+board is a work queue — work it. The change classification (tier) is the throttle.
+
+**The autonomy ladder (by tier):**
+- **Lower-tier work (hotfix + standard feature cycles) → DRIVE autonomously, no pause for a go.**
+  Run the card's parsimony + cost/benefit gate FIRST (below). If the verdict is BUILD or SIMPLIFY,
+  take it all the way — build → the tier's reviews → verify → ship — without stopping to ask.
+  Approval is *implied* by the tier plus a passing gate; do not re-request it.
+- **Delicate / invariant-critical / cost-AND-safety work → PAUSE for approval** before build and
+  again before deploy. These are the changes where one missed path loses money or safety.
+
+**The gate that earns the autonomy (run BEFORE building, every card):**
+1. **Parsimony** — is the problem sharp and real (one falsifiable sentence)? Does the simplest
+   version capture most of the benefit? Verdict BUILD / SIMPLIFY / PARK / DROP on the card.
+2. **Cost/benefit** — does the marginal benefit pay for the ingredient risk + review cost? If a
+   low-tier change drags in a categorically risky ingredient (shared-primitive writes,
+   cross-component state, a rare-fire code path), that is a signal to SIMPLIFY or to treat it as
+   delicate — not to barrel ahead because "it's only a small change."
+
+**When the gate is AMBIGUOUS → escalate, don't guess.** A clean BUILD/SIMPLIFY drives
+autonomously; a clean PARK/DROP parks with its revival trigger. But when the parsimony verdict is
+genuinely unclear, or the cost/benefit is a toss-up, do NOT silently pick and do NOT stall the
+whole queue: **notify the operator** (a real notification that reaches them) AND **park the card
+as `waiting_user` with a crisp user-verb `next`** (APPROVE / PICK A-or-B). Then **move on to the
+next eligible card** — one ambiguous card must not block the flow. The notification and the parked
+card are redundant on purpose: the notification prompts, the board holds the decision durably.
+
+**Still always pause — the gate does not override these:** a review returns do-not-ship; the work
+grows beyond the card's scope (re-scope, don't silently widen); anything destructive /
+outward-facing / published; the operator flagged it delicate; hostile timing. These are few and
+specific, not a general licence to stop.
+
+**Keep going — the loop.** When a card reaches done (or a clean park), **do not stop and report
+for instructions — pick the next one.** Rank per the section above, skip blocked / unmet-dependency
+/ approval-pending cards, and drive the next eligible card through the same gate. Report at natural
+checkpoints — a ship, a batch cleared, an approval gate, a genuine question — not after every card.
+The board, not a chat prompt, is the source of "what's next."
+
+## Concurrency & builder isolation
+
+Ranking answers *what next*; concurrency answers *how many at once*. A board worked strictly
+serially never empties, so treat parallelism as a first-class sequencing dimension. What safely
+parallelizes: **disjoint surfaces** (cards touching different files/subsystems),
+**framing-disjoint reviews of the same diff**, and read/scope work beside build work. What must
+NOT: anything in a dependency chain, two agents writing the same file, or work that depends on a
+diff still under review.
+
+**The hard requirement: every concurrent repo-writing dispatch runs in its own git worktree, and
+the orchestrator commits its own work before dispatching.** The collision that bites is not only
+merge conflicts — a dispatched builder doing routine git hygiene (`git reset --hard`, a stash, a
+`checkout -- .`) in the *shared* checkout silently destroys the orchestrator's uncommitted edits
+and any other concurrent writer's work, with no recoverable trace for uncommitted tracked files.
+Two non-negotiable rules follow:
+
+1. **Commit (or stash) your own work BEFORE dispatching any repo-writing agent.** A committed
+   change survives a `reset --hard`; an uncommitted one does not. The orchestrator's tree must be
+   clean at dispatch time.
+2. **Every repo-writing builder runs in its own worktree — even a single one, even a "quick"
+   one.** "Only one builder, so no collision" is the exact rationale that fails: the collision is
+   builder-vs-orchestrator, not just builder-vs-builder.
+
+The real bottleneck is orchestrator attention, not agent count: every concurrent agent returns a
+report that must be independently verified — never accept a builder's or reviewer's summary as
+fact. Fan out to the width you can actually verify, then stop.
 
 ## Producer AND consumer — check both, always
 

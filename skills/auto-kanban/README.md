@@ -87,6 +87,32 @@ card, no fan-out, a per-lull cap) and records one of six verdicts — duplicate/
 already-shipped, config-only, dead, real, or unresolved-in-budget. An investigated card moves
 or closes; it never returns to plain intake.
 
+## Ranking & autonomy — drive the board, don't just view it
+
+The board is a **work queue**, not just a status display. Two mechanisms turn it into one:
+
+- **Computed ranking (WSJF).** Every card gets a deterministic score —
+  `(value + time_criticality + unblock) / effort` — that the renderer computes as a pure function
+  of the card data, so it works on every card via defaults and sharpens as you set `rank:` inputs.
+  Each lane sorts by score, so its #1 is always the next thing to pull; `unblock` is computed from
+  the card graph plus an explicit `foundational` score, so platform pieces everything stands on
+  rank high even when no card drew the dependency edge. Ranking is part of grooming — an un-scored
+  card after a groom is an unfinished groom.
+- **Drive-from-the-board autonomy.** The default posture is motion, not permission-seeking. Lower-
+  risk work drives autonomously after a parsimony + cost/benefit gate (BUILD/SIMPLIFY → go,
+  PARK/DROP → park, AMBIGUOUS → notify the operator and park the card as `waiting_user` with an
+  operator-verb `next`, then continue); delicate / invariant-critical work pauses for approval.
+  When a card ships or parks, the agent picks the next eligible card and keeps going, reporting at
+  ships and gates rather than after every card.
+
+A `waiting_user` card's `next` must open with the *user's* action verb — APPROVE / PICK / ANSWER /
+VERIFY / DO / REVIEW — so the lane reads as a decision queue, not as agent work parked on the human.
+
+Concurrency is a first-class sequencing dimension, with one hard rule: every repo-writing agent
+runs in its own git worktree and the orchestrator commits its own work before dispatching — a
+dispatched builder's routine `git reset --hard` in a shared checkout silently destroys uncommitted
+work.
+
 ## Watch results write back
 
 When a shipped card's live validation lands (confirmed / violated / pending), the result is
