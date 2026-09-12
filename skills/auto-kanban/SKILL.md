@@ -118,6 +118,33 @@ The board is **data**, not prose:
 - **History:** done cards age out of the active data file into `kanban.history.yaml` rather
   than bloating the board. Git history is the durable record.
 
+### Board render design — autonomy visibility + operator agency
+
+The render exists to make autonomous work **visible and steerable**, not just to list cards. Three
+elements, all pure functions of the data (so a view can never drift from the board):
+
+1. **Lane order elevates the human decision queue.** Render the "waiting on the human" lane(s)
+   immediately after `review` (ahead of shipped/organic), so cards needing a call are near the top —
+   and groom that lane FIRST each session (a card whose input already arrived is a grooming miss).
+2. **"Waiting on human" cards carry a free-form instruction box** (not just fixed buttons). It posts
+   `{card_id, action:"instruct", text, at}` to the same disposition endpoint the buttons use; the
+   agent applies it at session start (writes the instruction onto the card, front of the grooming
+   queue, treats it as authority). This is the human's free-text steering channel — no drop back to chat.
+3. **Top-of-board autonomy counter + recent-work feed** (a `meta.autonomy_feed` list):
+   - **Counter (large type, above all lanes):** `N / D` where **N = feed entries concluded in the
+     last 24h** (ack-agnostic — a conclusion is a historical fact) and **D = open-card count
+     (`status != done`)**. D **shrinks as work completes**, and the ratio is recomputed every render,
+     so it re-bases after each push automatically.
+   - **Feed:** an expandable list of entries that are NOT acknowledged AND younger than 7 days, newest
+     first. Each has an **Acknowledge** button (posts `{card_id:<feed-id>, action:"ack"}`); ack retires
+     the entry from the live feed, and any entry older than 7 days auto-archives (hidden) regardless —
+     so the feed never clutters.
+   - **Append discipline (load-bearing):** every time a card is concluded autonomously (built /
+     parked-at-gate / moved to waiting / shipped / done), append one feed entry the same turn. A
+     conclusion with no feed entry is invisible to the human's 24h view — the same capture-failure the
+     board exists to kill, applied to the progress counter. Prune acknowledged / >7-day entries during
+     grooming so the data file stays lean.
+
 ## The ship gate — board currency as an output of releasing
 
 Board reconciliation is typically the only step in a release ritual with no forcing function:
@@ -167,6 +194,12 @@ At **session start**, before reporting status, the agent applies the queue to th
   SAME authority as an in-chat "go" — the agent must not re-ask.
 - `investigate` (early-stage cards) → flag the card `needs_investigation: true`; it jumps to
   the front of the next lull-investigation sweep (below).
+- `instruct` (waiting-on-human cards) → carries a `text` field with the human's free-form
+  instruction. Append it onto the card, treat it as authority (act on it, don't re-ask), and put
+  the card at the FRONT of the grooming queue. It usually says how to resolve the card — follow it,
+  moving the card to the right lane; if it asks for something that fails a gate, notify back + record why.
+- `ack` (recent-work feed entries) → the `card_id` is a feed entry's id; mark that
+  `meta.autonomy_feed` entry `acknowledged: true` so it retires from the live feed. Not a card-status change.
 
 Then delete the queue file, re-render, and commit. Ask only when a disposition is ambiguous
 against the card's state (e.g. `done` on a card that never shipped). Dispositions are strictly
@@ -501,14 +534,38 @@ board is a work queue — work it. The change classification (tier) is the throt
   Approval is *implied* by the tier plus a passing gate; do not re-request it.
 - **Delicate / invariant-critical / cost-AND-safety work → PAUSE for approval** before build and
   again before deploy. These are the changes where one missed path loses money or safety.
+- **Investigations (measure-first cards) → DRIVE autonomously too.** Run the measurement (a cheap,
+  read-only probe over data that already exists). Then branch on the OUTCOME: if it does NOT open a
+  build lane (refuted, or the fix needs a human call / external input) → record the finding and drop
+  the card into `waiting_user` with a crisp user-verb `next` (or close it if the mechanism was
+  refuted). If it DOES open a build lane → plan and build ONLY if it passes the FULL gate below — not
+  just the tier. Tier is the first gate; value, prior-art, parsimony and cost/benefit all still apply.
 
-**The gate that earns the autonomy (run BEFORE building, every card):**
-1. **Parsimony** — is the problem sharp and real (one falsifiable sentence)? Does the simplest
+**The gate that earns the autonomy — FOUR steps IN ORDER, run BEFORE building, every card.** Do not
+skip a step because the card "looks obvious"; a later step's verdict is only trustworthy if the
+earlier steps passed. Record each step's finding on the card.
+1. **Validity — GROUND TRUTH first (still needed AND not already done).** Read the authoritative
+   source (the code at the named location, the test suite, the live system, the history) and confirm
+   the work is still real and not already shipped — the board is a *claim*, not proof, and can be
+   stale in either direction (see "Verify-before-work" below). A card that is already-done / moot
+   retires here before any parsimony debate.
+2. **Prior-art / reuse (REUSE-or-BUILD, cite the location).** Before proposing to BUILD any new
+   mechanism, scan for existing prior art and record REUSE (with the existing symbol's location) or
+   BUILD (why nothing equivalent exists). The producer you are about to "build" often already exists.
+3. **Parsimony** — is the problem sharp and real (one falsifiable sentence)? Does the simplest
    version capture most of the benefit? Verdict BUILD / SIMPLIFY / PARK / DROP on the card.
-2. **Cost/benefit** — does the marginal benefit pay for the ingredient risk + review cost? If a
+4. **Cost/benefit** — does the marginal benefit pay for the ingredient risk + review cost? If a
    low-tier change drags in a categorically risky ingredient (shared-primitive writes,
    cross-component state, a rare-fire code path), that is a signal to SIMPLIFY or to treat it as
    delicate — not to barrel ahead because "it's only a small change."
+
+**Verify-before-work — NO card is worked until it is proven not-already-done.** This sits ABOVE the
+rest of the gate: read the cheapest observation that distinguishes *already-done* from *still-real*,
+and record it on the card the same turn. Both failure directions are real — a card that says "open"
+but is done wastes a rebuild; a card that says "done/clean" but is not is worse (it silently drops
+out of every future sweep). A verdict that resolves a card is cashed the SAME turn: write it, set the
+terminal status, and only then pick the next card. Never trust an agent's or a teammate's "it's still
+open / already fixed" summary — confirm the commit/code/state exists yourself.
 
 **When the gate is AMBIGUOUS → escalate, don't guess.** A clean BUILD/SIMPLIFY drives
 autonomously; a clean PARK/DROP parks with its revival trigger. But when the parsimony verdict is
