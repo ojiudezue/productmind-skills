@@ -145,6 +145,37 @@ elements, all pure functions of the data (so a view can never drift from the boa
      board exists to kill, applied to the progress counter. Prune acknowledged / >7-day entries during
      grooming so the data file stays lean.
 
+### Board-stack BLUEPRINT — the contract every board implements itself
+
+When a project runs MULTIPLE hosted boards, do NOT hand-patch each host's server per change — that
+coupling is what this blueprint removes. The skill IS the contract: any agent maintaining any board
+reads it and brings ITS OWN render + server into conformance. Maintain one reference implementation.
+
+1. **Disposition API.** A tiny static-file server + micro-API: `POST /api/disposition`
+   `{card_id, action, at[, text]}` appends one JSONL line — `action` ∈
+   `done|deferred|declined|approve|investigate|instruct|ack|move:<status>`; `text` is OPTIONAL
+   free-form (operator decision/instruction), capped, and **MUST be preserved, not stripped**
+   (for `ack`, card_id is the feed entry id; for `instruct`, the card id). `GET /api/dispositions`
+   returns the raw queue; `POST /api/dispositions/clear` truncates after a successful import. The
+   puller carries `text` through to the pending file and **includes it in the dedup key**.
+2. **Serving model → why a shim exists.** Boards are usually served as a CACHED STATIC file,
+   re-rendered on a cron — so a click's state must survive a reload before the next render via TWO
+   layers: (a) the render reads the pending queue and paints the acked/decided state server-side
+   (durable); (b) a small `localStorage` echo + CSS class toggle re-applies it instantly on reload.
+   That is the only client state — no framework. Per-request rendering makes (b) optional.
+3. **Render contract.** Counter `N/D` (shrinking denominator); feed entries show an Acknowledge
+   button, and "waiting on human" entries ALSO show an inline decision box (posts `instruct` on the
+   card); acked entries render IN PLACE as "acked — pending apply" (never optimistically removed);
+   queued decisions show a "decision queued: …" chip; the human-decision lanes render elevated.
+4. **Groom-time reconciliation.** `ack` → mark the feed entry acknowledged AND, if its card is in a
+   terminal-ready lane and the work is complete, MOVE the card to done (an ack is acceptance, not a
+   dismissal). `instruct` → write the decision onto the card and move it to the lane the decision
+   implies. Then prune acked/decided entries and re-render. Never leave a half-applied disposition.
+
+**Self-conform rule:** change this blueprint first, then each board's agent brings its render +
+server into conformance from the spec — the skill is the single source; per-host files are
+conformant implementations.
+
 ## The ship gate — board currency as an output of releasing
 
 Board reconciliation is typically the only step in a release ritual with no forcing function:
