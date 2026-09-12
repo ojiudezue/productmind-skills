@@ -63,6 +63,24 @@ cards:
   parsimony:
     problem: exported names with non-ASCII characters are unreadable for every user
     verdict: BUILD                # BUILD / SIMPLIFY / PARK / DROP
+  rank:                           # WSJF inputs — the renderer scores every card and
+                                  # orders each lane by WSJF descending. All fields optional;
+                                  # the board ranks on defaults until you set them.
+                                  # WSJF = (value + time_criticality + unblock) / effort
+    value: 6                      # 1-10: user / $ / safety / correctness impact (default 5)
+    time_criticality: 4           # 1-10: how fast the cost of delay grows (default 3;
+                                  #   a live-broken card floors this at 8)
+    effort: 3                     # job size (fibonacci). Omit to derive from the tier tag.
+    # foundational: 0             # 0-10: set ONLY on genuine platform pieces that many
+                                  #   cards quietly stand on (a shared resolver, a signal bus,
+                                  #   a test re-arch). It floors the `unblock` term so real
+                                  #   leverage is visible even when no link edge was drawn.
+  links:                          # cards are a graph, not a list — link at creation, not cleanup
+    blocks: [IMPORT-4]            # cards that cannot proceed until this lands (mirror on the other card)
+    related: [NOTIFY-2]           # same family, no dependency
+    context: 'IMPORT-4 round-trips exported files, so its fixtures depend on this encoding fix;
+      NOTIFY-2 shares the same non-ASCII handling. context is MANDATORY — one sentence per link
+      saying WHY, so a future reader learns the relationship, not just that two ids touch.'
   next: add a regression test with a non-ASCII fixture, then open the PR
   refs:
   - docs/plans/export-fix.md
@@ -103,6 +121,10 @@ cards:
   parsimony:
     problem: render time grows linearly with card count and may become noticeable
     verdict: PARK
+  rank:
+    value: 3                      # low impact today (board is small)
+    time_criticality: 2           # cost of delay barely grows until the trigger nears
+    effort: 5
   revisit_trigger: active card count exceeds 150, or render time exceeds 2 seconds
   next: none until the trigger fires — then promote to pre_planning
   refs: []
@@ -120,6 +142,11 @@ cards:
     gist: agent found backup failures in the job log while investigating disk alerts
   why: retention is a cost/risk trade-off only the human can make
   operator_decision: 'choose: keep 30 days (larger disk) vs keep 7 days (current disk)'
+  links:
+    blocked_by: [PROVISION-2]     # mirror of PROVISION-2's `blocks: [BACKUP-1]` — a dependency
+                                  # written on only one card is invisible from the side that needs it.
+    context: 'the larger-disk option cannot be applied until PROVISION-2 attaches the new volume;
+      until then only the 7-day option is actionable.'
   next: apply whichever retention policy the operator picks
   refs: []
 
