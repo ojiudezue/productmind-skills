@@ -12,12 +12,14 @@ The book's feature-prioritization method. Place the feature on two axes.
 | **Low sharpness**  | **build-alongside** (only riding a sharper feature) | **scrap**                  |
 
 ## Reading it
+
 - **build-now** — the default green light.
 - **long-term-moat** — real value, high cost. Sequence it later; it's defensible.
 - **build-alongside** — only justified if it ships *with* a sharper feature it enables.
 - **scrap** — low value, high cost. Say no.
 
 ## When you lack an effort signal
+
 No codebase, no estimate? Infer ease from **go-to-market difficulty** (new motion? new
 buyer? support load?) and stamp the ease axis **LOW confidence**. The 2×2 is also
 **comparative** — its placement is sharpest when you can rank the feature against the

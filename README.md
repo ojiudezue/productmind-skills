@@ -21,7 +21,6 @@ Most skills repos help you write code faster. ProductMind Skills help you **buil
   staleness contract, cron pull-and-render hosting, example schema + self-contained demo board.
 - **2026-07** — repo hygiene: markdownlint CI + auto-fixes across skills.
 
-
 ## What's Different
 
 Every skill blends business and product judgment with engineering execution:
