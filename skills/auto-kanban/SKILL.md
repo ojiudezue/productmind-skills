@@ -138,6 +138,29 @@ and doesn't see the work, because the visible half wasn't built.
   objective / code area / risk owner. Then **ask** to stop and re-sequence; never leave them silently.
   A different tier of the SAME problem is not a divergence.
 
+### Finish-the-arc mechanics — five rules
+
+Field finding from an arc review: work is rarely *lost* outright — it *piles up* (in one month,
+69 cards opened vs 31 closed; 40 parked on the human; a card in-progress for two months; built work
+in review for a month). Goal: finish the key parts of an arc and don't spawn unfinished tasks.
+
+1. **Arc-close at release (make it HARD).** The release script's card gate also checks the shipped
+   cards' arc siblings (same `batch`, same or pointing `links.parent`, or `sibling_of`). An open
+   sibling blocks the release unless it ships in the same release, is parked with a trigger, or is cut
+   with an explicit reason that gets written onto the card. Set `batch:` / `links.parent` when you
+   decompose an arc, or the gate can't see it.
+2. **Recommend, don't menu.** A `waiting_user` card's `next` states the default the agent will take
+   and why. For low-tier, reversible, non-outward-facing cards, if the human hasn't vetoed by the next
+   session, take the default and record it. Everything else still waits for an explicit answer.
+3. **WIP cap on built work.** A `review` card older than ~7 days gets the first slot at the next
+   attended release, ahead of new builds. An unattended pass doesn't start a new build while ≥3 cards
+   sit in `review`; it drains them instead.
+4. **Residuals fold into the parent.** A leftover from an investigation or a ship is a dated block on
+   its parent card unless it has its own problem statement, fix and acceptance criteria.
+5. **Capture covers everything that changes the system**, not only the main repo's code: config
+   changes made through tools/UIs, sibling-repo work, and cross-session hand-offs. These are the
+   changes that most often never get a card, because they never touch the code path.
+
 ## Architecture — structured data as the source of truth
 
 The board is **data**, not prose:
