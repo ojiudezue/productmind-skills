@@ -40,7 +40,7 @@ self-contained — no dependencies beyond a YAML parser for the optional render 
    ```yaml
    meta:
      last_reconciled: '2026-01-01'
-     columns: [inbox, pre_planning, planned, in_progress, review, shipped,
+     columns: [inbox, investigating, pre_planning, planned, in_progress, review, shipped,
                waiting_user, waiting_agent, parked]
    cards: []
    ```

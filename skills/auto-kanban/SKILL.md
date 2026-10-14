@@ -10,7 +10,9 @@ description: >
   operator dispositions the agent applies at session start. Load this skill at
   session start, whenever the user pushes a new idea or request, whenever the agent proposes
   something mid-turn (a test, a config knob, a bug it just found), and before writing a planning
-  doc (to harvest cards into the plan).
+  doc (to harvest cards into the plan). Includes the adjacency sweep, finish-the-job rule, an
+  Investigating lane with binary exits, verify-before-work against ground truth, a config-first gate
+  step, card linking, and the unattended overnight-pass contract.
 ---
 
 # Auto-Kanban — capture-first board for agent workflows
@@ -84,6 +86,57 @@ displaced to the end of the session. **Rule: writing a handoff or a decision-tra
 capture trigger.** Every forward-looking decision in it must be minted as a card in the same
 commit. If it is worth writing down for the next session, it is worth a card the next session can
 actually see.
+
+## The second rule: adjacency sweep before a new card is accepted
+
+**No new card is accepted as its own item before sweeping ALL existing work for adjacency or
+duplication.** This does not weaken capture-first — capture into Inbox immediately, then run the
+sweep *before the card is promoted out of Inbox*. Board hygiene fails in the mirror-image direction
+from capture failure: a board that never merges becomes a list nobody reads, and duplicate cards
+**split the evidence for one problem across two places so neither is decisive.**
+
+**The board is NOT the whole prior art.** Sweep all four surfaces, in order — skipping the last two
+is the observed failure mode:
+
+1. The board data file — every card's title + `why`, **not just the thread you assume it belongs
+   to**. Adjacency routinely crosses threads.
+2. The project's backlog file(s) — newer diagnoses often land there, not on the board.
+3. **Parked / deferred deliverables inside planning docs** ("plan completion tracking" sections). A
+   parked deliverable with an evidence trigger *is* a card living in a planning doc. This is the
+   surface that gets missed, because it looks like shipped work.
+4. Catalogs / audits / probe results — the extend-vs-new adjudicators.
+
+Test the relationship in order:
+
+- **Duplicate** — same problem, same fix surface → merge into the existing card; do not create.
+- **Adjacent** — different problem, but *same code surface, same decision, or same discriminator*
+  → fold in as a sub-finding, or create with an explicit link (see "Card linking"). **Adjacency is
+  the case most often mis-filed as new.**
+- **New** — no shared surface or decision → create it, and record what it was swept against.
+
+**Is it a new card or an INSTANCE of an existing one?** A newly-measured occurrence of a defect that
+is already carded is an instance: append it to the existing card as a dated `INSTANCE_<date>` block.
+"It was found in a different cycle" is not a reason for a new card.
+
+**Record the ruling on the survivor** (`DEDUPE_<date>:` what was folded in and why) — a silent merge
+is indistinguishable from a dropped card three weeks later. **Merging is lossy if careless:** the
+survivor inherits the **union** of Origin / Constraints / evidence, never the intersection. **A
+parked item whose trigger has since fired is not done — it is READY**; promote it, don't re-plan it.
+And check parked-plan triggers at **cycle close**, not only at card creation: a shipped cycle often
+fires a parked plan's revival trigger and nobody notices until the human asks.
+
+## The third rule: finish the job — don't leave siblings carded
+
+Decomposing one body of work into pieces (deliverables D1..Dn, tiers, a cluster of cards in one arc)
+is a **commitment to finish the whole set**, not a menu to pick one or two from. Shipping part of an
+arc and leaving the sibling pieces as open cards is the failure mode — the human looks at the feature
+and doesn't see the work, because the visible half wasn't built.
+
+- Capture-first still holds — the failure is **carding-instead-of-finishing**, not carding.
+- Drive the whole decomposed set to done.
+- **The one legitimate stop is a real divergence** — the remaining pieces are genuinely a different
+  objective / code area / risk owner. Then **ask** to stop and re-sequence; never leave them silently.
+  A different tier of the SAME problem is not a divergence.
 
 ## Architecture — structured data as the source of truth
 
@@ -206,6 +259,43 @@ end of each deploy script) that runs `render_board.py --check` and surfaces its 
 That converts every real shipping path into a reconcile prompt, so the forcing function follows
 the work instead of waiting at a door nobody uses.
 
+## Overnight / unattended work needs a scheduler, not an intention
+
+*"Build it tonight while I'm sleeping"* has no forcing function: the session ends and nothing wakes
+anything up. Work tagged for unattended execution must be bound to a **real recurring scheduled job**
+whose first action is a board reconcile. An overnight commitment with no scheduler is a promise —
+and "documented but never wired" is itself a finding (observed: an investigations lane didn't drain
+for days because the nightly pass was specified in the skill but never scheduled).
+
+**Pick the vehicle by what the work must reach.** If the measurements need private-network data
+(a LAN database, SSH to a home server, local MCP servers), a cloud-hosted scheduled agent **cannot**
+run them — it has none of that reach. Run it as a **local scheduled job** (launchd / cron / systemd
+timer) on an always-on machine that already has the access, invoking the agent CLI headless. A cloud
+routine is fine only for code-side work: reconcile, static/prior-art investigation, low-tier builds.
+
+**The pass contract, in order, every run:**
+
+1. **Reconcile first.** Load this skill, apply queued dispositions (including `instruct` / `ack`),
+   run `--check`, move disposed cards to their lanes, prune acked / >7-day feed entries.
+2. **Verify-before-work, then drive the ranked eligible queue through the full gate.** Groom the
+   `waiting_user` lane first, then `investigating`: run each investigation's one-shot read-only
+   measurement, record it on the card, then escalate or build.
+3. **Bounded autonomy — MORE conservative than an attended session:**
+   - Investigations + read-only probes: fully autonomous.
+   - Low-tier builds that pass the gate: build + review + validate **to `review` only — never deploy
+     unattended.** A deploy at 3 a.m. into a live system nobody is watching is hostile timing.
+     Leave shippable work in `review` with tests and release notes done.
+   - Delicate / ambiguous / destructive / outward-facing: don't act — move to `waiting_user` with a
+     user-verb `next`, and send a real notification.
+4. **Append a feed entry for everything concluded** (measured / built-to-review / parked /
+   escalated), timestamped from the real clock, so the morning counter reflects the run. The board +
+   feed IS the report. Respect a token budget; stop when the eligible queue is dry; never spiral.
+
+**An unattended pass shares the checkout with any attended session.** If a human-driven session
+starts while the pass is running, it should detect the pass (process list / lock file) and hold its
+own repo writes — or the pass should run in its own worktree — so two writers don't edit the board
+file at once.
+
 ## Operator dispositions — a one-way human-to-agent queue
 
 If the board is hosted as a web page, the human will read it when the agent isn't running — and
@@ -321,8 +411,9 @@ Card template (as it appears in the YAML):
 - id: CARD-1
   title: One-line plain-language problem -> solution statement
   thread: area              # workstream
-  status: inbox             # inbox / pre_planning / planned / in_progress /
-                            # review / shipped / waiting_user / waiting_agent / parked
+  status: inbox             # CLOSED SET: inbox / investigating / pre_planning / planned /
+                            # in_progress / review / shipped / waiting_user / waiting_agent /
+                            # parked (+ done in history). Never coin a synonym.
   created: '2026-01-01 14:30'    # date + time the card was born. Set once, never changed.
   updated: '2026-01-02 09:15'    # date + time of the last material edit. Bump on EVERY edit.
                                  # created == updated on a new card.
@@ -398,11 +489,69 @@ same edit (and bump `updated`). The board converges through the update hooks, no
   *how much*. Together they answer, at a glance: *raw first idea, or been through the wringer?*
 - The renderer surfaces `created` / `updated` / `refinement_status` on each card in both the
   Markdown board and the hosted page, so staleness and maturity are visible without opening the YAML.
+- **Every timestamp comes from the real clock — read it, never estimate it.** Run `date` (or the
+  equivalent) when stamping `created` / `updated` / feed `at` / any "measured at HH:MM" note. An agent
+  has no reliable sense of wall-clock time, especially a long-running unattended one, and will happily
+  write times that haven't happened yet (observed: an overnight pass stamped feed entries 02:20–03:05
+  while the clock read 02:10, and a "measured ~07:46" note five hours early). Invented times corrupt
+  the 24-hour progress counter, the staleness ordering, and the anti-starvation tiebreak — and they
+  read as evidence. Use one timezone consistently and say which.
+
+## Cards stay true — understanding changes, the card changes the SAME turn
+
+A card is not a task ticket; it is the durable record of **what we currently believe**. A superseded
+belief left on a card is a trap set for the next session. Edit the card in the same turn whenever:
+
+- **A root cause is refuted or replaced.** Don't just add the new story underneath — mark the old one
+  WRONG and say what killed it. A card carrying two mechanisms and no verdict is worse than one
+  carrying a wrong mechanism, because the reader can't tell which survived.
+- **A claim the agent made turns out false** — including one made to the human in chat. Retract it
+  ON THE CARD ("I claimed X; that is wrong; here is what refuted it"). Chat scrolls away.
+- **Scope changes** (something folded in, dropped, handed to another card) — record the decision and
+  its reason, so a reader sees a choice rather than an omission.
+- **An estimate becomes a measurement.** Replace the guess with the number and how it was obtained.
+
+**Test:** would a fresh session, reading only this card, act on something we now know is untrue? If
+yes, edit it now. "The fix is happening in another card" or "the fix will make it moot" are not
+reasons to defer — a fix in flight can be abandoned, and then only the card remains.
+
+**Status must track reality, not just the body.** Whenever you write a material update to a card,
+ask what lane it is now in and move it in the same edit (and bump `updated`). A card whose body is
+actively changing while its status still says `inbox`, or whose implied next step clearly changed
+(audit finished, build landed, blocker cleared) but nobody moved it, makes the lane view lie — and
+the lane view is how a returning human reads the board. Common prompt transitions: capture gains a
+measurement plan → `investigating`; investigation finds a mechanism → `pre_planning`/`planned`;
+investigation refutes → `done`; a branch with real work exists → `in_progress`; needs a human call →
+`waiting_user`; the agent owes a check → `waiting_agent` (never the human's lane).
+
+## Card linking — cards are a graph, not a list
+
+A board of unlinked cards loses its most valuable information: which findings are the *same*
+finding, which blocks another, which parent will actually fix a symptom. Several of the highest-value
+findings on a mature board are only visible as relationships — two cards that are one bug carded
+twice, a cluster of consumers all sitting on one partly-dead producer.
+
+Use the `links:` block from the card template. Rules:
+
+1. **`context` is mandatory and is the point.** A bare id says two cards touch, not what the
+   relationship buys the reader.
+2. **Link at creation, not at cleanup** — a link added later has already failed the reader who needed it.
+3. **`blocks` / `blocked_by` are mirrored** on both cards; a one-sided dependency is invisible from
+   the side that needs it most.
+4. **Gating is a link, not a note.** When several cards wait on one input, put `blocked_by` on each so
+   ranking can't pick a card whose input isn't ready.
+5. **When you refute or supersede, LINK — don't delete.** The refuted card is the record of why the
+   current answer is the current answer.
+6. **Contradictions get linked too** — say so in `context`, before a builder discovers it mid-cycle.
+
+In prose, reference cards as `[[CARD-ID]]`; a reference to a card that doesn't exist yet marks work
+worth carding, not an error.
 
 ## Columns
 
-`Inbox` (raw capture) → `Pre-planning` (idea being decomposed) → `Planned` (has acceptance
-criteria) → `In progress` → `Review` → `Shipped` — plus three side lanes:
+`Inbox` (raw capture) → `Investigating` (we do not yet know what is true; measuring) →
+`Pre-planning` (idea being decomposed) → `Planned` (has acceptance criteria) → `In progress` →
+`Review` → `Shipped` — plus three side lanes:
 
 - `Waiting on user` — decisions or actions only the human can take.
 - `Waiting on agent` — things the agent owes (a promised verification, a re-measurement).
@@ -422,6 +571,52 @@ input, and it hides what is actually being asked for. The most common real actio
 PICK — if a card can't reduce to one of the five verbs, it may be mislaned work the agent can
 drive under implied approval.
 
+### `status:` is a closed set, and it is the ONLY lane field
+
+Status values are a **closed set** — `inbox`, `investigating`, `pre_planning`, `planned`,
+`in_progress`, `review`, `shipped`, `waiting_user`, `waiting_agent`, `parked`, `done`. Inventing a
+near-synonym (`intake`, `todo`, `blocked`) is a silent hygiene failure: the renderer cannot lane it,
+so the card vanishes from every status-first read while still *looking* filed (observed: a session
+coined `intake` for all seven cards it created that day; every one dropped out of the lane view). If a
+card fits no lane, discuss the lane — don't coin a status.
+
+**One field owns the lane.** Do not let a parallel field (`column:`, `state:`, `lane:`) carry the same
+concept: the renderer buckets on `status` only, and anything else falls into a bucket nobody reads
+(observed: a quarter of a board carried its lane in a legacy `column:` field — perfectly valid values,
+completely invisible). Two failure shapes look different and read identically on the board: a card in
+a lane that no longer matches its work (stale value — a judgement error), and a card whose lane the
+renderer can't see at all (wrong field or invented value — silent, and worse).
+
+### `Investigating` — the step before pre-planning
+
+`Pre-planning` means *we know the problem and are shaping the solution.* Investigation is the step
+before that: **we do not yet know what is true, and we are measuring to find out.** Different activity,
+different exit. Without this lane, a card carrying hours of measurement, refutations and corrections
+sits in Inbox looking identical to a one-line shower thought.
+
+**Entry:** the card's next action is a MEASUREMENT, not a build or a decomposition.
+
+**Exit is mandatory and binary — an investigation that can't say which is not finished:**
+- **CONFIRMED / mechanism found** → promote to `pre_planning` or `planned`, carrying the evidence.
+- **REFUTED** → close the card (`done`) with the refutation recorded. A refuted investigation is a
+  completed one; closing it is what stops the next session re-deriving the dead mechanism.
+
+Cards must not rot here: an investigation with no measurable next step belongs in `parked` (with a
+revisit trigger) or `waiting_agent` (if the measurement is a debt the agent owes).
+
+**When an investigation surfaces real work — retire-and-relink, keyed on the problem statement.**
+Ask one question: *does the surfaced build have the SAME problem statement as the card's title?*
+- **Confirmed — the build IS the card's own premise** → promote the same card in place. Don't spawn a
+  new one; the history and evidence stay attached to the work they justify.
+- **Refuted-but-fertile — the premise was wrong, but a DIFFERENT real problem surfaced** → close the
+  investigation `done` (refutation recorded) and open a NEW card for the different work, linked
+  `superseded_by` / `related` with a one-line context. If a card for that work already exists, point
+  at it instead of minting a duplicate.
+- **Refuted-and-barren** → close `done` with the refutation. A complete result, not a failure.
+
+The failure this kills: an investigation that quietly becomes a build under a title describing the
+*disproven* hypothesis, so a later reader can't tell what the card is for.
+
 ## Cadence — bind updates to events, not to a clock
 
 Clock-based cadences ("update the board every 30 minutes") rely on remembering a separate chore,
@@ -429,7 +624,8 @@ so they drift under load. Bind every board update to a checkpoint that already h
 
 1. **Session start:** read the board; **apply any queued operator dispositions** (see above);
    run the renderer's `--check`; if stale, reconcile against repo/live state *before* reporting
-   status.
+   status. **Groom `waiting_user` first** — re-verify whether each human input is still needed (the
+   blocker may have cleared) and move cards whose input already arrived.
 2. **On every push / mid-turn idea:** add or update a card the same turn, before acting.
 3. **Pre-planning harvest:** before writing any planning doc, harvest the relevant cards —
    Origin / Why / Constraints / Parked-alts / Knobs flow straight into the plan. This is the
@@ -580,6 +776,12 @@ earlier steps passed. Record each step's finding on the card.
    the work is still real and not already shipped — the board is a *claim*, not proof, and can be
    stale in either direction (see "Verify-before-work" below). A card that is already-done / moot
    retires here before any parsimony debate.
+1b. **Config-first — can a SETTING fix it instead of code?** Before any plan or build, check whether
+   a configuration change solves it: a live runtime knob, a settings/options field, a per-entity
+   config value, a third-party integration setting, or a documented operator action. **Read the
+   knobs' live values — don't recall them.** If a setting fixes it, do or propose that and record on
+   the card why code is unnecessary. (Field evidence: in one session three planned code changes turned
+   out to be a knob turn, a knob turn, and a non-problem refuted by data.)
 2. **Prior-art / reuse (REUSE-or-BUILD, cite the location).** Before proposing to BUILD any new
    mechanism, scan for existing prior art and record REUSE (with the existing symbol's location) or
    BUILD (why nothing equivalent exists). The producer you are about to "build" often already exists.
@@ -591,12 +793,43 @@ earlier steps passed. Record each step's finding on the card.
    delicate — not to barrel ahead because "it's only a small change."
 
 **Verify-before-work — NO card is worked until it is proven not-already-done.** This sits ABOVE the
-rest of the gate: read the cheapest observation that distinguishes *already-done* from *still-real*,
-and record it on the card the same turn. Both failure directions are real — a card that says "open"
-but is done wastes a rebuild; a card that says "done/clean" but is not is worse (it silently drops
-out of every future sweep). A verdict that resolves a card is cashed the SAME turn: write it, set the
-terminal status, and only then pick the next card. Never trust an agent's or a teammate's "it's still
-open / already fixed" summary — confirm the commit/code/state exists yourself.
+rest of the gate: **read the card → verify against ground truth → THEN gate → then build.** A card is
+a *claim* about the world, written at some past moment; the world changes without touching the board
+(a sibling cycle fixes the bug, a config change moots it, a device comes back, a later ship subsumes
+it). Treat every card's state assertion as unverified until checked *this session*, with an
+independent read of the authoritative source — not the card's own summary.
+
+| Card kind | The check that settles it |
+|---|---|
+| Code defect / missing behavior | read the current source at the named location — is the fix already on the main branch? |
+| Shipped-feature follow-up | the history / release notes / validation record for that surface |
+| Live-system symptom | read the live state, DB row, or metrics — is it still happening? |
+| Test / suite defect | RUN the suite (or file) now; never trust a recorded pass/fail count |
+| Config-only item | read the live config — it may already be set |
+| Doc / board item | open the file — the section may already exist |
+
+**Both directions are failures.** A card that says "open" but is done wastes a rebuild. A card that
+says "done / clean / fixed" but is not is worse — it silently drops out of every future sweep
+(observed: a card recorded "collection now clean"; one collect-only run the next morning returned two
+errors). Verification means *confirm the card is true*, in whichever direction.
+
+**Verdicts (recorded on the card with the command/observation that produced them):** `ALREADY-DONE` ·
+`PARTIALLY-DONE` (narrow to the residual, re-score effort) · `MOOT` (premise gone) · `STILL-REAL`
+(proceed, carrying the fresh evidence) · `CARD-WAS-WRONG` (mark the false claim WRONG with what
+refuted it — often co-occurs with STILL-REAL).
+
+**Retire before moving on.** A verdict that resolves a card is cashed the SAME turn: write it, set the
+terminal status (`done` for ALREADY-DONE / MOOT / refuted), bump `updated`, re-render, and only then
+pick the next card. A resolved-but-still-open card is worse than never checking — the next session
+re-verifies settled work.
+
+**Board-wide, not just the card you're about to pick.** Every open lane gets verified, and parked
+cards get their revival triggers checked the same way. Work highest-ranked first so the drive loop is
+never blocked on a complete sweep, and date each verdict so a later session can tell fresh evidence
+from stale assertions. Never trust an agent's or teammate's "still open / already fixed" summary —
+confirm the commit/code/state exists yourself. An **approval does not bypass this**: an approved card
+(board button or chat "go") still passes the validity check first; approval authorises the work, it
+does not exempt it from proving the work is still needed.
 
 **When the gate is AMBIGUOUS → escalate, don't guess.** A clean BUILD/SIMPLIFY drives
 autonomously; a clean PARK/DROP parks with its revival trigger. But when the parsimony verdict is

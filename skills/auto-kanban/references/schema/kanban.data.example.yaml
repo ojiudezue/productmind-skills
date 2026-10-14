@@ -18,15 +18,17 @@ meta:
   artifact_url: https://example.com/your-published-board
   target_host: kanban.example.com
 
-  # Column order for the rendered views. status values on cards must be one of these.
+  # Column order for the rendered views. status values on cards must be one of these —
+  # a CLOSED set (plus `done` in history). Never invent a near-synonym; the renderer cannot lane it.
   columns:
   - inbox
+  - investigating    # we do not yet know what is true; the next action is a measurement
   - pre_planning
   - planned
   - in_progress
   - review
   - shipped          # shipped, organic/live proof still open
-  - waiting_operator # decisions only the human can take
+  - waiting_user     # decisions only the human can take
   - waiting_agent    # things the agent owes
   - parked           # deliberately deferred, always with a revisit trigger
 
@@ -135,7 +137,7 @@ cards:
 - id: BACKUP-1
   title: Nightly backup target is full -> pick a retention policy
   thread: infra
-  status: waiting_operator
+  status: waiting_user
   approval: blocked
   origin:
     date: '2026-01-11'
