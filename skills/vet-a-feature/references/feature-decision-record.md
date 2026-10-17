@@ -33,6 +33,7 @@ The specific condition under which this decision should be reconsidered
 ```
 
 ## Why the revisit trigger matters
+
 PARK and SCRAP are not permanent. The trigger is what turns "no, not now" into a
 re-evaluation later — without it, parked features are silently lost or re-litigated from
 scratch.

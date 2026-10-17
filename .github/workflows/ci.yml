@@ -1,12 +1,40 @@
 name: CI
 
-on: [push, pull_request]
+# push is branches-only: a tag push would make the push-back below create a
+# branch named after the tag. pull_request still runs for validation.
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+
+permissions:
+  contents: write
+
+# A newer push makes an in-flight run stale, so drop it.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      # Branch pushes only: auto-fix formatting so nobody hand-fixes nits. PRs skip
+      # this (fork tokens are read-only) and are validated as-is by the steps below.
+      - name: Auto-fix markdown
+        if: github.event_name == 'push'
+        uses: DavidAnson/markdownlint-cli2-action@v19
+        # Unfixable issues are caught by the Lint step; don't fail the job here.
+        continue-on-error: true
+        with:
+          globs: "**/*.md"
+          config: .markdownlint.json
+          fix: true
 
       - name: Lint markdown
         uses: DavidAnson/markdownlint-cli2-action@v19
@@ -20,9 +48,28 @@ jobs:
       - name: Check internal links
         run: bash scripts/check-links.sh
 
+      # Runs only if every step above passed, so an auto-fixed commit is never
+      # pushed unless it is already clean.
+      - name: Push auto-fixes
+        if: github.event_name == 'push'
+        # Via env, not inline ${{ }}: a crafted branch name can't inject shell here.
+        env:
+          REF: ${{ github.ref_name }}
+        run: |
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No formatting changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          # [skip ci] guards against a fix -> push -> fix loop.
+          git commit -m "style: auto-format markdown [skip ci]"
+          git push origin "HEAD:$REF"
+
   # deploy:
   #   needs: validate
   #   if: github.ref == 'refs/heads/main'
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - run: echo "Deploy step — configure for your target"
+  #     - run: echo "Deploy step: configure for your target"

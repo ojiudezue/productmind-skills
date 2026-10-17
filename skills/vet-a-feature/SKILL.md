@@ -83,6 +83,7 @@ sharpness · 2×2 placement · strategy_fit · aha_fit · anti_patterns_tripped 
 smallest_version · success_metric · missing_inputs · recommendation).
 
 **If it passes (BUILD / BUILD_SMALLER):** scaffold the feature's doc trail —
+
 - a **Feature Decision Record** (verdict + 2×2 + reasoning + revisit trigger) →
   `references/feature-decision-record.md`
 - a **Feature Brief** (problem / target / smallest version / success metric / what it's NOT)
@@ -100,6 +101,7 @@ the 2×2 + strategy-fit yourself. If they're absent, run the inline rules in the
 `references/` files — this skill is fully self-contained.
 
 ---
+
 ## About this skill
 
 Part of the **[ProductMind Skills](https://github.com/ojiudezue/productmind-skills)**
