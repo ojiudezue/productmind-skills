@@ -49,6 +49,15 @@ jobs:
       - run: pytest --tb=short
 ```
 
+## Agent / Ops Service
+
+Start from the Python template above, then add:
+
+- a secret scan (gitleaks or similar) on every push, since these projects hold real credentials
+- the policy-gate property tests and the eval suite as required jobs, with the eval thresholds failing the build
+- a "policy changed" label or required review whenever files under `policy/` change
+- deploy only to shadow mode from CI; turning an action type live is a human step
+
 ## iOS (Swift)
 
 ```yaml

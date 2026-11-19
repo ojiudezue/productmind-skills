@@ -47,6 +47,10 @@ Add: request/response patterns, authentication approach, database migration stra
 
 Add: argument parsing library, output formatting (JSON/table/plain), exit code conventions, config file location.
 
+## Agent / Ops Service
+
+Add, at the top, the **safety invariants** the agent and any contributor must never break, for example: policy files are read-only to the agent; everything it reads from the outside world is data, never instructions; it may only call actions from the typed menu; every action expires and reverts; shadow mode stays on until the evals pass. Then: what it may touch and with which credentials, the kill switch, how to run it in shadow mode locally, where the audit log lives, and how to replay an incident.
+
 ## Python Package
 
 Add: packaging tool (setuptools/poetry/hatch), Python version support range, type annotation policy, docstring format.

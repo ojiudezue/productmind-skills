@@ -38,6 +38,10 @@ Score each dimension as **Strong**, **Moderate**, or **Weak**. If 3+ dimensions 
 - **Moderate**: Plausible path but requires scale or experimentation to validate
 - **Weak**: No idea how this makes money or creates measurable value
 
+## Internal Tools and Agent / Ops Services
+
+When the project is for the builder's own systems, read dimensions 2-6 for that context: the target user is the operator, competitors are the existing tools and workarounds, differentiation is fit to this environment, and impact is time saved and incidents caught. If the project might later become a product, score that framing separately; the two verdicts can differ, and that difference is worth stating.
+
 ## Decision Matrix
 
 | Weak Scores | Recommendation |

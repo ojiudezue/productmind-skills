@@ -24,8 +24,11 @@ Scaffolds a complete software project across two layers simultaneously:
 Ask the user three things:
 
 1. **Project type** — What are we building?
-   - iOS app, Android app, web app (React/Next/etc.), API service, CLI tool, Python package, monorepo, etc.
+   - iOS app, Android app, web app (React/Next/etc.), API service, CLI tool, Python package, monorepo, **agent / ops service**, etc.
+   - **Agent / ops service** = a long-running process that watches and acts on real systems: a monitoring or security agent, an automation daemon, an LLM agent with tools, a watchdog. It has no end user screen; its "users" are an operator and the systems it touches. Its risks are about what it can *do*, so it gets extra scaffolding (Steps 4, 6, 7).
    - If ambiguous, propose your best guess and let them correct it.
+
+   Also ask **who it is for**: an internal tool for the builder's own infrastructure, or a product for others? Score the viability gate for each framing the user cares about. An internal tool can be clearly worth building while the product version still needs evidence; say so instead of blending the two.
 
 2. **Reference projects** — Which existing projects should we borrow patterns from?
    - This saves enormous time. Reuse folder conventions, CI configs, testing setups, CLAUDE.md patterns.
@@ -81,6 +84,8 @@ This is not a placeholder — do real research:
 
 Use web search to populate this. If web search is unavailable, clearly mark sections as "NEEDS RESEARCH" so the user knows to fill them.
 
+**Agent / ops services:** when the project is an internal tool, replace market research with `docs/prior-art.md` (existing tools and how they fall short for this environment, designs worth borrowing) and add `docs/threat-model.md`: what the agent can touch, what an attacker could feed it (logs, names, web pages are hostile input), what happens if it or its credentials are compromised, and what happens if it dies mid-action. If it may become a product, do both.
+
 ### Step 5: Generate CLAUDE.md
 
 Create a `CLAUDE.md` tailored to the project type. Read `references/claude-md-patterns.md` for type-specific templates.
@@ -117,6 +122,21 @@ project-root/
 └── .gitignore
 ```
 
+**Agent / ops services** add four things to this tree, because their risk lives in what they are allowed to do:
+
+```
+project-root/
+├── policy/                     # What the agent may do: rules, action ladder, protected targets, budgets.
+│                               # Data, versioned, reviewed by a human, read-only to the agent at runtime.
+├── evals/                      # Replays of real history, synthetic scenarios, hostile-input cases, scoring
+├── deploy/                     # Host/container definition, service units, an independent "undo" sweeper
+└── docs/
+    ├── threat-model.md
+    └── runbooks/               # Pause it, roll back its actions, rotate its credentials
+```
+
+In `src/`, keep the parts that decide separate from the parts that act: collectors, detection, the reasoning loop (if any), a policy gate, a typed action executor, notifications, and an append-only audit log.
+
 For the `quality-log.md`, initialize it with this structure:
 
 ```markdown
@@ -144,6 +164,7 @@ Do not set up just one type of test. Read `references/testing-by-project-type.md
 | API | Unit, integration, contract, load |
 | CLI | Unit, integration (bats/shellspec), snapshot |
 | Python package | Unit (pytest), type checking (mypy), property-based (hypothesis) |
+| Agent / ops service | Unit, policy-gate property tests, replay, hostile-input, failure/chaos, eval scoring with pass thresholds |
 
 Create config files, sample test files, and npm/pip scripts so tests run immediately.
 
@@ -158,6 +179,8 @@ Generate `.github/workflows/ci.yml` (or equivalent) that:
 - Includes a build/deploy step (even if it's just a placeholder)
 
 Read `references/ci-templates.md` for project-type-specific pipelines.
+
+For agent / ops services, the evals are the release gate: an action type is switched on only after it meets its thresholds in shadow mode (proposing, not acting). Scaffold the shadow-mode switch from day one.
 
 ### Step 9: Set Up Prototyping (UI Projects Only)
 

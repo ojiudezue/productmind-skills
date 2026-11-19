@@ -55,6 +55,21 @@ Setup: `pytest.ini` or `pyproject.toml` config, conftest.py, sample test for eac
 
 Setup: Test config, sample tests, fixture files for input scenarios.
 
+## Agent / Ops Service
+
+Long-running agents and automation that act on real systems. Test what the agent is *allowed* to do as hard as what it computes.
+
+| Layer | Tool | What it covers |
+|---|---|---|
+| Unit | pytest (or the stack's runner) | Collectors, parsers, detection rules |
+| Policy gate (property-based) | Hypothesis | No input, however crafted, yields an action outside the menu, on a protected target, or over budget |
+| Replay | Recorded logs/events + pytest | Run real history through detection and the gate; compare with what a human decided |
+| Hostile input | Curated cases | Instructions hidden in log lines, hostnames, web pages and tool output do not change the agent's choices |
+| Failure / chaos | Scripts | Agent killed mid-action, dependency down, credentials revoked: actions still expire and revert, it fails safe |
+| Eval scoring | `evals/scoring.py` | Precision, false-positive rate and wrong-action count per action type, with pass thresholds that gate enablement |
+
+Setup: a fixture directory of recorded inputs, a fake executor that records instead of acting, and a `shadow` flag that every action path checks.
+
 ## Python Package
 
 | Layer | Tool | What it covers |

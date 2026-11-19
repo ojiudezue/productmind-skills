@@ -42,6 +42,9 @@ When scaffolding, recommend and fetch skills across ALL four categories — not 
 | CLI design | Command-line tools |
 | Database design | Projects with persistent data |
 | Infrastructure / DevOps | Projects needing deployment beyond a simple host |
+| Threat modelling / security review | Agent / ops services and anything holding credentials |
+| Evaluation design | Agent / ops services and LLM features: replay sets, scoring, release thresholds |
+| Change control / runbooks | Agent / ops services that act on production systems |
 
 ## How to Apply
 
